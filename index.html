@@ -1,0 +1,1126 @@
+<!doctype html>
+<html lang="vi" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TFitness - Gym Management System</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * { font-family: 'Be Vietnam Pro', 'Inter', sans-serif; }
+    :root {
+      --primary: #F04E23;
+      --primary-dark: #D63A10;
+      --dark: #1A1A1A;
+      --sidebar-bg: #C0392B;
+      --sidebar-dark: #922B21;
+    }
+    body { background: #fff; }
+    html, body, #app { height: 100%; }
+    .hero-gradient { background: linear-gradient(135deg, #F04E23 0%, #D63A10 100%); }
+    .card-shadow { box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+    .nav-shadow { box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+    .btn-primary { background: var(--primary); color: white; padding: 10px 20px; border-radius: 8px; border: none; cursor: pointer; font-weight: 600; transition: all 0.3s; }
+    .btn-primary:hover { background: var(--primary-dark); }
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-ghost { background: transparent; border: 1.5px solid var(--primary); color: var(--primary); padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.3s; }
+    .btn-ghost:hover { background: var(--primary); color: white; }
+    .sidebar { width: 240px; background: var(--sidebar-bg); color: white; flex-shrink: 0; position: fixed; left: 0; top: 0; height: 100%; overflow-y: auto; z-index: 40; transition: all 0.3s ease; }
+    .main-wrapper { margin-left: 240px; display: flex; flex-direction: column; height: 100%; transition: margin-left 0.3s ease; }
+    .navbar { height: 64px; background: white; box-shadow: 0 2px 8px rgba(0,0,0,0.06); display: flex; align-items: center; padding: 0 40px; }
+    .content { flex: 1; overflow-y: auto; padding: 40px; }
+    .sidebar-menu { padding: 20px; }
+    .menu-item { padding: 12px 20px; margin: 8px 0; border-radius: 8px; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; gap: 12px; font-size: 14px; }
+    .menu-item.active { background: white; color: var(--primary); }
+    .menu-item:hover { background: rgba(255,255,255,0.1); }
+    .input-field { width: 100%; padding: 12px 16px; border: 1px solid #e5e7eb; border-radius: 8px; font-size: 14px; font-family: inherit; }
+    .input-field:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(240,78,35,0.1); }
+    .badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+    .badge-orange { background: #fed7aa; color: var(--primary); }
+    .badge-green { background: #d1fae5; color: #059669; }
+    .badge-red { background: #fee2e2; color: #dc2626; }
+    .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 50; }
+    .modal { background: white; border-radius: 16px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); max-width: 520px; width: 90%; max-height: 90vh; overflow-y: auto; }
+    .toast { position: fixed; bottom: 20px; right: 20px; background: #10b981; color: white; padding: 16px 24px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 100; animation: slideUp 0.3s ease-out; }
+    @keyframes slideUp { from { transform: translateY(100px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    .radio-field { display: flex; align-items: center; gap: 12px; cursor: pointer; padding: 16px; border: 2px solid #e5e7eb; border-radius: 12px; transition: all 0.3s; }
+    .radio-field.selected { border-color: var(--primary); background: rgba(240,78,35,0.05); }
+    .qna-card { background: white; border-left: 4px solid var(--primary); border-radius: 8px; padding: 16px; }
+    .qna-card.pending { border-left-color: #f59e0b; }
+    .qna-card.answered { border-left-color: #10b981; }
+    .staff-qna-item { background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 16px; margin-bottom: 12px; cursor: pointer; transition: all 0.3s; }
+    .staff-qna-item:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+    .hidden { display: none; }
+    .link-primary { color: var(--primary); cursor: pointer; text-decoration: none; }
+    .link-primary:hover { text-decoration: underline; }
+    .step-circle { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; color: white; }
+    .step-active { background: var(--primary); }
+    .step-inactive { background: #d1d5db; color: #6b7280; }
+    .step-done { background: #10b981; }
+    .qna-filter-tab { padding: 8px 20px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; border: 1.5px solid #e5e7eb; background: white; color: #6b7280; transition: all 0.2s; }
+    .qna-filter-tab.active { background: var(--primary); color: white; border-color: var(--primary); }
+    .qna-filter-tab:hover:not(.active) { border-color: var(--primary); color: var(--primary); }
+    .qna-full-item { background: white; border: 1px solid #e5e7eb; border-radius: 12px; padding: 20px; margin-bottom: 16px; transition: all 0.3s; }
+    .qna-full-item:hover { box-shadow: 0 6px 20px rgba(0,0,0,0.1); transform: translateY(-1px); }
+    .qna-full-item.pending { border-left: 4px solid #f59e0b; }
+    .qna-full-item.answered { border-left: 4px solid #10b981; }
+
+    /* ── REPORT BUILDER ── */
+    .report-builder { display: grid; grid-template-columns: 320px 1fr; gap: 28px; align-items: start; }
+    .report-type-card { display: flex; align-items: center; gap: 12px; cursor: pointer; padding: 13px 15px; border: 2px solid #e5e7eb; border-radius: 10px; transition: all 0.2s; margin-bottom: 8px; }
+    .report-type-card:hover { border-color: #fca99b; background: rgba(240,78,35,0.02); }
+    .report-type-card.selected { border-color: var(--primary); background: rgba(240,78,35,0.05); }
+    .rtype-icon { width: 34px; height: 34px; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 17px; }
+    .period-pill { padding: 7px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; cursor: pointer; border: 1.5px solid #e5e7eb; background: white; color: #6b7280; transition: all 0.2s; }
+    .period-pill.active { background: var(--primary); color: white; border-color: var(--primary); }
+    .period-pill:hover:not(.active) { border-color: var(--primary); color: var(--primary); }
+    .bar-wrap { display: flex; align-items: flex-end; gap: 6px; height: 72px; }
+    .bar-col { display: flex; flex-direction: column; align-items: center; flex: 1; }
+    .bar-rect { width: 100%; border-radius: 4px 4px 0 0; transition: height 0.5s ease; min-width: 16px; }
+    .bar-lbl { font-size: 9px; text-align: center; color: #9ca3af; margin-top: 3px; }
+    .prog-track { height: 8px; border-radius: 4px; background: #e5e7eb; overflow: hidden; flex: 1; max-width: 160px; }
+    .prog-fill { height: 100%; border-radius: 4px; transition: width 0.5s ease; }
+    .kpi-tile { text-align: center; padding: 18px 14px; border-radius: 12px; }
+    .kpi-val { font-size: 1.8rem; font-weight: 800; line-height: 1.1; }
+    .kpi-lbl { font-size: 11px; color: #6b7280; font-weight: 500; margin-top: 4px; }
+    .kpi-d { font-size: 11px; font-weight: 600; margin-top: 3px; }
+    .d-up { color: #10b981; } .d-dn { color: #ef4444; }
+    .rtab { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .rtab th { background: #f9fafb; padding: 9px 13px; text-align: left; font-weight: 700; color: #374151; border-bottom: 1px solid #e5e7eb; }
+    .rtab td { padding: 9px 13px; border-bottom: 1px solid #f3f4f6; color: #4b5563; vertical-align: middle; }
+    .rtab tr:last-child td { border-bottom: none; }
+    .rtab tr:hover td { background: #fafafa; }
+    .rcard { background: white; border-radius: 14px; padding: 24px; margin-bottom: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.07); border: 1px solid #f3f4f6; }
+    .rcard h2 { font-size: 20px; font-weight: 800; margin-bottom: 20px; }
+
+    /* Export dropdown */
+    .exp-wrap { position: relative; display: inline-block; }
+    .exp-menu { position: absolute; right: 0; top: calc(100% + 8px); background: white; border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.15); z-index: 30; min-width: 220px; padding: 8px; display: none; border: 1px solid #f3f4f6; }
+    .exp-menu.open { display: block; animation: slideUp 0.15s ease-out; }
+    .exp-item { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-radius: 8px; cursor: pointer; font-size: 14px; transition: background 0.15s; }
+    .exp-item:hover { background: #f9fafb; }
+    .exp-item .ei-icon { font-size: 22px; width: 32px; text-align: center; }
+
+    @media print {
+      .no-print { display: none !important; }
+      .main-wrapper { margin-left: 0 !important; }
+      .sidebar, .navbar { display: none !important; }
+      .content { padding: 0 !important; overflow: visible !important; }
+      .report-builder { display: block !important; }
+    }
+  </style>
+  <script src="/_sdk/data_sdk.js"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <style>body { box-sizing: border-box; }</style>
+ </head>
+ <body class="h-full">
+  <div id="app" class="w-full h-full">
+   <script>
+     let allMessages = [];
+     const dataHandler = {
+       onDataChanged(data) {
+         allMessages = data || [];
+         app.refreshQNAData();
+       }
+     };
+     window.dataSdk.init(dataHandler);
+   </script>
+
+   <!-- ══════════ STUDENT HOMEPAGE ══════════ -->
+   <div id="homepage" class="w-full h-full overflow-auto">
+    <nav class="navbar w-full sticky top-0 z-30">
+     <div class="flex items-center justify-between w-full max-w-7xl mx-auto px-6">
+      <div class="flex items-center gap-3">
+       <div class="w-10 h-10 bg-primary rounded-lg flex items-center justify-center" style="background:var(--primary)"><i data-lucide="dumbbell" class="w-6 h-6 text-white"></i></div>
+       <div><span class="font-bold text-xl text-gray-900">TFitness</span><p class="text-xs text-gray-500 -mt-1">Gym xong, yêu liền</p></div>
+      </div>
+      <div class="flex items-center gap-3"><button class="btn-ghost" onclick="app.showLoginModal()">Đăng nhập</button> <button class="btn-primary" onclick="app.showRegistrationStep(1)">Đăng ký</button></div>
+     </div>
+    </nav>
+    <section class="hero-gradient py-24 px-6 text-white">
+     <div class="max-w-6xl mx-auto text-center">
+      <h1 class="text-6xl font-extrabold mb-6">Bắt đầu hành trình fitness của bạn</h1>
+      <p class="text-xl mb-12 opacity-95">Tập luyện cùng đội ngũ huấn luyện viên chuyên nghiệp tại TFitness. Nâng cấp sức khỏe, nâng cấp bản thân!</p>
+      <div class="flex gap-4 justify-center">
+       <button class="btn-primary" onclick="app.showRegistrationStep(1)" style="background:white; color:var(--primary); border:none;">Đăng ký miễn phí</button>
+       <button class="btn-ghost" style="border-color:white; color:white;" onclick="app.showLoginModal()">Đã có tài khoản? Đăng nhập</button>
+      </div>
+     </div>
+    </section>
+    <section class="bg-white py-20 px-6">
+     <div class="max-w-6xl mx-auto">
+      <div class="text-center mb-12"><h2 class="text-4xl font-bold text-gray-900 mb-4">Tại sao chọn TFitness?</h2><p class="text-gray-600 font-medium">Chúng tôi cam kết mang đến trải nghiệm tập luyện tốt nhất cho bạn</p></div>
+      <div class="grid grid-cols-4 gap-8">
+       <div class="text-center"><div class="text-5xl font-extrabold mb-2" style="color:var(--primary)">5000+</div><p class="text-gray-700 font-semibold">Thành viên</p></div>
+       <div class="text-center"><div class="text-5xl font-extrabold mb-2" style="color:var(--primary)">50+</div><p class="text-gray-700 font-semibold">Huấn luyện viên</p></div>
+       <div class="text-center"><div class="text-5xl font-extrabold mb-2" style="color:var(--primary)">10+</div><p class="text-gray-700 font-semibold">Giải thưởng</p></div>
+       <div class="text-center"><div class="text-5xl font-extrabold mb-2" style="color:var(--primary)">10+</div><p class="text-gray-700 font-semibold">Năm kinh nghiệm</p></div>
+      </div>
+     </div>
+    </section>
+    <section class="bg-gray-50 py-20 px-6">
+     <div class="max-w-5xl mx-auto">
+      <div class="text-center mb-12"><h2 class="text-4xl font-bold text-gray-900 mb-4">Gói tập nổi bật</h2><p class="text-gray-500">Chọn gói tập phù hợp với nhu cầu của bạn</p></div>
+      <div class="grid grid-cols-2 gap-8">
+       <div class="bg-white rounded-xl p-8 card-shadow">
+        <div class="flex items-center gap-3 mb-6"><div class="w-12 h-12 rounded-lg flex items-center justify-center" style="background:rgba(240,78,35,0.1)"><i data-lucide="dumbbell" class="w-6 h-6" style="color:var(--primary)"></i></div><h3 class="text-xl font-bold">Gói Basic</h3></div>
+        <p class="text-3xl font-extrabold mb-6" style="color:var(--primary)">500.000đ<span class="text-lg font-medium text-gray-500">/tháng</span></p>
+        <ul class="space-y-4 mb-8">
+         <li class="flex items-center gap-3"><i data-lucide="check" class="w-5 h-5" style="color:var(--primary)"></i><span class="text-gray-700">Sử dụng toàn bộ khu vực tập</span></li>
+         <li class="flex items-center gap-3"><i data-lucide="check" class="w-5 h-5" style="color:var(--primary)"></i><span class="text-gray-700">Tập luyện 24/7</span></li>
+         <li class="flex items-center gap-3"><i data-lucide="check" class="w-5 h-5" style="color:var(--primary)"></i><span class="text-gray-700">Tư vấn chế độ dinh dưỡng</span></li>
+         <li class="flex items-center gap-3"><i data-lucide="check" class="w-5 h-5" style="color:var(--primary)"></i><span class="text-gray-700">Theo dõi tiến độ tập luyện</span></li>
+        </ul><button class="btn-primary w-full" onclick="app.showRegistrationStep(1)">Đăng ký ngay</button>
+       </div>
+       <div class="bg-white rounded-xl p-8 card-shadow border-2" style="border-color:var(--primary); position:relative">
+        <div class="absolute top-4 right-4"><span class="badge badge-orange">Phổ biến nhất</span></div>
+        <div class="flex items-center gap-3 mb-6"><div class="w-12 h-12 rounded-lg flex items-center justify-center" style="background:rgba(240,78,35,0.1)"><span class="text-2xl">👑</span></div><h3 class="text-xl font-bold">Gói Premium</h3></div>
+        <p class="text-3xl font-extrabold mb-6" style="color:var(--primary)">800.000đ<span class="text-lg font-medium text-gray-500">/tháng</span></p>
+        <ul class="space-y-4 mb-8">
+         <li class="flex items-center gap-3"><i data-lucide="check" class="w-5 h-5" style="color:var(--primary)"></i><span class="text-gray-700">Tất cả quyền lợi gói Basic</span></li>
+         <li class="flex items-center gap-3"><i data-lucide="check" class="w-5 h-5" style="color:var(--primary)"></i><span class="text-gray-700">2 buổi PT miễn phí/tháng</span></li>
+         <li class="flex items-center gap-3"><i data-lucide="check" class="w-5 h-5" style="color:var(--primary)"></i><span class="text-gray-700">Sử dụng phòng xông hơi</span></li>
+         <li class="flex items-center gap-3"><i data-lucide="check" class="w-5 h-5" style="color:var(--primary)"></i><span class="text-gray-700">Massage thư giãn</span></li>
+         <li class="flex items-center gap-3"><i data-lucide="check" class="w-5 h-5" style="color:var(--primary)"></i><span class="text-gray-700">Ưu tiên đặt lịch tập</span></li>
+        </ul><button class="btn-primary w-full" onclick="app.showRegistrationStep(1)">Đăng ký ngay</button>
+       </div>
+      </div>
+     </div>
+    </section>
+    <section class="bg-white py-20 px-6">
+     <div class="max-w-6xl mx-auto">
+      <div class="text-center mb-12"><h2 class="text-4xl font-bold text-gray-900 mb-4">Những lợi ích từ TFitness</h2><p class="text-gray-600">Cải thiện sức khỏe, xây dựng thân hình mơ ước</p></div>
+      <div class="grid grid-cols-3 gap-8">
+       <div class="text-center"><div class="text-6xl mb-4">💪</div><h3 class="text-xl font-bold mb-2">Tập luyện chuyên nghiệp</h3><p class="text-gray-600">Huấn luyện viên giàu kinh nghiệm hỗ trợ bạn đạt mục tiêu</p></div>
+       <div class="text-center"><div class="text-6xl mb-4">🥗</div><h3 class="text-xl font-bold mb-2">Tư vấn dinh dưỡng</h3><p class="text-gray-600">Lập kế hoạch ăn uống hợp lý để có kết quả tối ưu</p></div>
+       <div class="text-center"><div class="text-6xl mb-4">📊</div><h3 class="text-xl font-bold mb-2">Theo dõi tiến độ</h3><p class="text-gray-600">Ứng dụng hiện đại giúp bạn thấy sự thay đổi rõ ràng</p></div>
+      </div>
+     </div>
+    </section>
+    <section class="bg-gray-50 py-20 px-6">
+     <div class="max-w-6xl mx-auto">
+      <div class="text-center mb-12"><h2 class="text-4xl font-bold text-gray-900 mb-4">Lớp tập phổ biến</h2><p class="text-gray-600">Tham gia các lớp tập theo sở thích của bạn</p></div>
+      <div class="grid grid-cols-4 gap-6">
+       <div class="bg-white rounded-lg p-6 text-center card-shadow"><div class="text-5xl mb-4">🧘</div><h3 class="font-bold mb-2">Yoga</h3><p class="text-sm text-gray-600">Thư giãn và nâng cao sự linh hoạt</p></div>
+       <div class="bg-white rounded-lg p-6 text-center card-shadow"><div class="text-5xl mb-4">💃</div><h3 class="font-bold mb-2">Zumba</h3><p class="text-sm text-gray-600">Nhảy múa vui vẻ, đốt calo hiệu quả</p></div>
+       <div class="bg-white rounded-lg p-6 text-center card-shadow"><div class="text-5xl mb-4">🏋️</div><h3 class="font-bold mb-2">Strength</h3><p class="text-sm text-gray-600">Xây dựng cơ bắp, tăng sức mạnh</p></div>
+       <div class="bg-white rounded-lg p-6 text-center card-shadow"><div class="text-5xl mb-4">🤸</div><h3 class="font-bold mb-2">Pilates</h3><p class="text-sm text-gray-600">Cải thiện tư thế, tăng cường năng lực</p></div>
+      </div>
+     </div>
+    </section>
+    <section class="hero-gradient py-20 px-6 text-white">
+     <div class="max-w-4xl mx-auto text-center"><h2 class="text-4xl font-bold mb-6">Bắt đầu ngay hôm nay</h2><p class="text-xl mb-12 opacity-95">Tham gia TFitness và trở thành phiên bản tốt nhất của chính bạn</p><button class="btn-primary" onclick="app.showRegistrationStep(1)" style="background:white; color:var(--primary); border:none; padding:16px 40px; font-size:16px;">Đăng ký ngay</button></div>
+    </section>
+    <footer class="bg-dark text-white py-16 px-6">
+     <div class="max-w-6xl mx-auto">
+      <div class="grid grid-cols-4 gap-10 mb-12">
+       <div>
+        <div class="flex items-center gap-3 mb-4"><div class="w-10 h-10 rounded-lg flex items-center justify-center" style="background:var(--primary)"><i data-lucide="dumbbell" class="w-5 h-5 text-white"></i></div><span class="font-bold text-xl">TFitness</span></div>
+        <p class="text-gray-400 text-sm mb-6">Trung tâm thể dục thể thao hàng đầu Việt Nam, mang đến trải nghiệm tập luyện chuyên nghiệp.</p>
+        <div class="flex gap-3">
+         <a href="#" class="w-9 h-9 bg-gray-800 rounded-lg flex items-center justify-center hover:bg-primary transition-colors"><i data-lucide="facebook" class="w-4 h-4 text-white"></i></a>
+         <a href="#" class="w-9 h-9 bg-gray-800 rounded-lg flex items-center justify-center hover:bg-primary transition-colors"><i data-lucide="instagram" class="w-4 h-4 text-white"></i></a>
+         <a href="#" class="w-9 h-9 bg-gray-800 rounded-lg flex items-center justify-center hover:bg-primary transition-colors"><i data-lucide="youtube" class="w-4 h-4 text-white"></i></a>
+         <a href="#" class="w-9 h-9 bg-gray-800 rounded-lg flex items-center justify-center hover:bg-primary transition-colors"><i data-lucide="music" class="w-4 h-4 text-white"></i></a>
+        </div>
+       </div>
+       <div><h4 class="font-bold text-white mb-5">Liên kết nhanh</h4><ul class="space-y-3"><li><a href="#" class="text-gray-400 hover:text-primary transition-colors text-sm">Về chúng tôi</a></li><li><a href="#" class="text-gray-400 hover:text-primary transition-colors text-sm">Gói tập luyện</a></li><li><a href="#" class="text-gray-400 hover:text-primary transition-colors text-sm">Huấn luyện viên</a></li><li><a href="#" class="text-gray-400 hover:text-primary transition-colors text-sm">Lịch tập</a></li><li><a href="#" class="text-gray-400 hover:text-primary transition-colors text-sm">Tin tức</a></li><li><a href="#" class="text-gray-400 hover:text-primary transition-colors text-sm">Liên hệ</a></li></ul></div>
+       <div><h4 class="font-bold text-white mb-5">Dịch vụ</h4><ul class="space-y-3"><li><a href="#" class="text-gray-400 hover:text-primary transition-colors text-sm">Personal Training</a></li><li><a href="#" class="text-gray-400 hover:text-primary transition-colors text-sm">Group Classes</a></li><li><a href="#" class="text-gray-400 hover:text-primary transition-colors text-sm">Yoga &amp; Pilates</a></li><li><a href="#" class="text-gray-400 hover:text-primary transition-colors text-sm">Massage &amp; Spa</a></li><li><a href="#" class="text-gray-400 hover:text-primary transition-colors text-sm">Tư vấn dinh dưỡng</a></li><li><a href="#" class="text-gray-400 hover:text-primary transition-colors text-sm">Đánh giá thể lực</a></li></ul></div>
+       <div><h4 class="font-bold text-white mb-5">Thông tin liên hệ</h4><ul class="space-y-4"><li class="flex items-start gap-3"><i data-lucide="map-pin" class="w-4 h-4 text-primary mt-0.5 flex-shrink-0"></i><span class="text-gray-400 text-sm">123 Đường Fitness, Q.1, TP.HCM</span></li><li class="flex items-center gap-3"><i data-lucide="phone" class="w-4 h-4 text-primary flex-shrink-0"></i><span class="text-gray-400 text-sm">0123 456 789</span></li><li class="flex items-center gap-3"><i data-lucide="mail" class="w-4 h-4 text-primary flex-shrink-0"></i><span class="text-gray-400 text-sm"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="d0b9beb6bf90a4b6b9a4beb5a3a3fea6be">[email&#160;protected]</a></span></li><li class="flex items-center gap-3"><i data-lucide="clock" class="w-4 h-4 text-primary flex-shrink-0"></i><span class="text-gray-400 text-sm">Thứ 2 – CN: 5:00 – 23:00</span></li></ul></div>
+      </div>
+      <div class="border-t border-gray-800 pt-8 flex justify-between items-center"><p class="text-gray-500 text-sm">© 2025 TFitness. Tất cả quyền được bảo lưu.</p><div class="flex items-center gap-6"><a href="#" class="text-gray-500 hover:text-primary transition-colors text-sm">Chính sách bảo mật</a> <a href="#" class="text-gray-500 hover:text-primary transition-colors text-sm">Điều khoản</a> <a href="#" class="text-gray-500 hover:text-primary transition-colors text-sm">Hỗ trợ</a></div></div>
+     </div>
+    </footer>
+   </div>
+
+   <!-- ══════════ REGISTRATION ══════════ -->
+   <div id="registration" class="hidden w-full h-full overflow-auto">
+    <nav class="navbar w-full sticky top-0 z-30">
+     <div class="flex items-center justify-between w-full max-w-7xl mx-auto px-6">
+      <div class="flex items-center gap-3"><div class="w-10 h-10 rounded-lg flex items-center justify-center" style="background:var(--primary)"><i data-lucide="dumbbell" class="w-6 h-6 text-white"></i></div><div><span class="font-bold text-xl text-gray-900">TFitness</span><p class="text-xs text-gray-500 -mt-1">Gym xong, yêu liền</p></div></div>
+      <div class="flex items-center gap-3"><button class="btn-ghost" onclick="app.showLoginModal()">Đăng nhập</button> <button class="btn-primary" onclick="app.showHomepage()">Quay lại</button></div>
+     </div>
+    </nav>
+    <div class="bg-white py-12 px-6 flex justify-center">
+     <div class="max-w-4xl w-full">
+      <div class="text-center mb-12"><h1 class="text-3xl font-bold text-gray-900 mb-2">← Đăng ký gói tập</h1><p class="text-gray-500">Hoàn thành 3 bước đơn giản để bắt đầu hành trình fitness của bạn.</p></div>
+      <div class="flex justify-between items-center mb-12 max-w-xl mx-auto">
+       <div class="flex flex-col items-center"><div id="step1-circle" class="step-circle step-active">1</div><p class="text-sm font-medium mt-2">Đăng ký tài khoản</p></div>
+       <div class="flex-1 h-1 mx-4 bg-gray-300"></div>
+       <div class="flex flex-col items-center"><div id="step2-circle" class="step-circle step-inactive">2</div><p class="text-sm font-medium mt-2">Chọn gói tập</p></div>
+       <div class="flex-1 h-1 mx-4 bg-gray-300"></div>
+       <div class="flex flex-col items-center"><div id="step3-circle" class="step-circle step-inactive">3</div><p class="text-sm font-medium mt-2">Thanh toán</p></div>
+      </div>
+      <div id="reg-step-1" class="bg-white rounded-xl card-shadow p-8 max-w-2xl mx-auto">
+       <h2 class="text-xl font-bold mb-6 pb-6 border-b">Bước 1: Đăng ký tài khoản</h2>
+       <div class="space-y-6">
+        <div><label class="block font-bold text-sm mb-2">Email *</label><input type="email" id="reg-email" class="input-field" placeholder="demo@tfitness.com"><p class="text-xs text-gray-500 mt-1">Chúng tôi sẽ gửi email xác thực vào địa chỉ này</p></div>
+        <div><label class="block font-bold text-sm mb-2">Mật khẩu *</label><div class="relative"><input type="password" id="reg-password" class="input-field pr-10" placeholder="••••••••"><i data-lucide="eye" class="w-5 h-5 text-gray-400 absolute right-3 top-3.5 cursor-pointer" onclick="app.togglePassword('reg-password')"></i></div><p class="text-xs text-gray-500 mt-1">Mật khẩu phải có ít nhất 8 ký tự</p></div>
+        <div><label class="block font-bold text-sm mb-2">Xác nhận mật khẩu *</label><div class="relative"><input type="password" id="reg-confirm-password" class="input-field pr-10" placeholder="••••••••"><i data-lucide="eye" class="w-5 h-5 text-gray-400 absolute right-3 top-3.5 cursor-pointer" onclick="app.togglePassword('reg-confirm-password')"></i></div></div>
+        <div><input type="checkbox" id="reg-agree"> <label for="reg-agree" class="text-sm ml-2">Tôi đồng ý với <a href="#" class="link-primary">Điều khoản dịch vụ</a> và <a href="#" class="link-primary">Chính sách bảo mật</a></label></div>
+        <div class="flex justify-end pt-6"><button class="btn-primary" onclick="app.showRegistrationStep(2)">Tiếp tục →</button></div>
+       </div>
+      </div>
+      <div id="reg-step-2" class="hidden bg-white rounded-xl card-shadow p-8 max-w-2xl mx-auto">
+       <h2 class="text-xl font-bold mb-6 pb-6 border-b">Bước 2: Chọn gói tập</h2>
+       <div class="space-y-6">
+        <div class="radio-field" onclick="app.selectPackage('basic')"><input type="radio" name="package" value="basic"><div class="flex-1"><div class="flex items-center gap-3 mb-3"><i data-lucide="dumbbell" class="w-5 h-5" style="color:var(--primary)"></i><h3 class="font-bold">Gói Basic</h3></div><p class="font-bold text-lg mb-3" style="color:var(--primary)">500.000đ/tháng</p><ul class="space-y-2"><li class="text-sm flex items-center gap-2"><span>✓</span>Sử dụng toàn bộ khu vực tập</li><li class="text-sm flex items-center gap-2"><span>✓</span>Tập luyện 24/7</li><li class="text-sm flex items-center gap-2"><span>✓</span>Tư vấn chế độ dinh dưỡng</li><li class="text-sm flex items-center gap-2"><span>✓</span>Theo dõi tiến độ tập luyện</li></ul></div></div>
+        <div class="radio-field selected" onclick="app.selectPackage('premium')"><input type="radio" name="package" value="premium"><div class="flex-1"><div class="flex items-center justify-between mb-3"><div class="flex items-center gap-3"><span class="text-2xl">👑</span><h3 class="font-bold">Gói Premium</h3></div><span class="badge badge-orange">Phổ biến nhất</span></div><p class="font-bold text-lg mb-3" style="color:var(--primary)">800.000đ/tháng</p><ul class="space-y-2"><li class="text-sm flex items-center gap-2"><span>✓</span>Tất cả quyền lợi gói Basic</li><li class="text-sm flex items-center gap-2"><span>✓</span>2 buổi PT miễn phí/tháng</li><li class="text-sm flex items-center gap-2"><span>✓</span>Sử dụng phòng xông hơi</li><li class="text-sm flex items-center gap-2"><span>✓</span>Massage thư giãn</li><li class="text-sm flex items-center gap-2"><span>✓</span>Ưu tiên đặt lịch tập</li></ul></div></div>
+        <div class="flex justify-between gap-4 pt-6"><button class="btn-ghost" onclick="app.showRegistrationStep(1)">← Quay lại</button><button class="btn-primary" onclick="app.showRegistrationStep(3)">Tiếp tục thanh toán →</button></div>
+       </div>
+      </div>
+      <div id="reg-step-3" class="hidden bg-white rounded-xl card-shadow p-8 max-w-2xl mx-auto">
+       <h2 class="text-xl font-bold mb-6 pb-6 border-b">Bước 3: Thanh toán</h2>
+       <div class="space-y-6">
+        <div class="bg-gray-50 p-4 rounded-lg flex justify-between items-center"><div><p class="font-bold">Gói Premium</p><p class="text-sm text-gray-500">Thời hạn: 1 tháng</p></div><p class="font-bold text-lg" style="color:var(--primary)">800.000đ</p></div>
+        <div><p class="font-bold text-sm mb-4">Phương thức thanh toán</p><div class="border-2 p-4 rounded-lg" style="border-color:var(--primary)"><div class="flex items-center justify-between"><div class="flex items-center gap-3"><span class="text-2xl">💳</span><div><p class="font-bold">Ví MoMo</p><p class="text-sm text-gray-500">Thanh toán qua ví điện tử MoMo</p></div></div><div class="w-5 h-5 rounded-full border-2" style="border-color:var(--primary); background:var(--primary)"></div></div></div></div>
+        <div><label class="block font-bold text-sm mb-2">Số điện thoại liên kết MoMo *</label><input type="tel" class="input-field" value="0913077489" placeholder="Nhập số điện thoại"><p class="text-xs text-gray-500 mt-1">Số điện thoại này phải được liên kết với tài khoản MoMo của bạn</p></div>
+        <div class="bg-blue-50 border border-blue-300 p-4 rounded-lg"><p class="font-bold text-sm text-blue-900 mb-2">ℹ️ Thông tin quan trọng:</p><ul class="text-sm text-gray-700 space-y-1"><li>• Bạn sẽ nhận được thông báo xác nhận từ MoMo</li><li>• Gói tập sẽ được kích hoạt ngay sau khi thanh toán thành công</li><li>• Gói tập sẽ tự động gia hạn hàng tháng khi tài khoản vẫn còn liên kết</li><li>• Để thay đổi gói, liên hệ lễ tân trước 3 ngày hết hạn</li><li>• Hotline hỗ trợ: 0123 456 789</li></ul></div>
+        <div class="flex justify-between gap-4 pt-6"><button class="btn-ghost" onclick="app.showRegistrationStep(2)">← Quay lại</button><button class="btn-primary" onclick="app.showToast('✅ Thanh toán thành công!'); setTimeout(() => app.showDashboard('student'), 1500)">≡ Thanh toán ngay</button></div>
+       </div>
+      </div>
+     </div>
+    </div>
+   </div>
+
+   <!-- ══════════ STUDENT DASHBOARD ══════════ -->
+   <div id="student-dashboard" class="hidden main-wrapper">
+    <div class="sidebar">
+     <div class="p-4 border-b border-white border-opacity-20"><div class="flex items-center gap-2 text-white mb-2"><div class="w-8 h-8 rounded-full flex items-center justify-center bg-white bg-opacity-20 font-bold text-sm">NVA</div><div><p class="text-sm font-bold">Nguyễn Văn A</p><p class="text-xs opacity-75">Học viên</p></div></div></div>
+     <div class="sidebar-menu">
+      <div class="menu-item active" onclick="app.switchStudentTab('dashboard')"><i data-lucide="home" class="w-4 h-4"></i><span>Trang chủ</span></div>
+      <div class="menu-item" onclick="app.switchStudentTab('qna')"><i data-lucide="help-circle" class="w-4 h-4"></i><span>Giải đáp thắc mắc</span></div>
+      <div class="menu-item" onclick="app.logout()"><i data-lucide="log-out" class="w-4 h-4"></i><span>Đăng xuất</span></div>
+     </div>
+    </div>
+    <nav class="navbar">
+     <div class="flex items-center justify-between w-full">
+      <div class="flex items-center gap-3"><div class="w-10 h-10 rounded-lg flex items-center justify-center" style="background:var(--primary)"><i data-lucide="dumbbell" class="w-6 h-6 text-white"></i></div><span class="font-bold text-xl text-gray-900">TFitness</span></div>
+      <div class="flex items-center gap-3 cursor-pointer" onclick="app.showLoginModal()"><div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-white text-sm" style="background:var(--primary)">NVA</div><span class="text-sm font-medium">Nguyễn Văn A</span><i data-lucide="chevron-down" class="w-4 h-4 text-gray-600"></i></div>
+     </div>
+    </nav>
+    <div class="content">
+     <div id="student-dashboard-tab">
+      <div class="max-w-7xl mx-auto">
+       <div class="hero-gradient rounded-xl p-12 text-white mb-8"><div class="flex justify-between items-start"><div class="flex-1"><h1 class="text-5xl font-extrabold mb-2">Xin chào, Nguyễn Văn A! 👋</h1><p class="text-xl opacity-95">Gói Premium của bạn sẽ hết hạn sau 25 ngày</p></div><div class="text-right"><p class="text-sm opacity-75">Gói hiện tại</p><p class="text-3xl font-bold">Premium</p></div></div></div>
+       <div class="grid grid-cols-3 gap-6 mb-8">
+        <div class="bg-white rounded-lg card-shadow p-6"><div class="flex justify-between items-start mb-4"><div><p class="text-gray-600 text-sm font-medium">Lớp tập tuần này</p><p class="text-4xl font-bold mt-2" style="color:var(--primary)">5</p></div><i data-lucide="calendar" class="w-8 h-8" style="color:var(--primary); opacity:0.3;"></i></div><p class="text-xs text-gray-500">Tổng 24 lớp/tháng</p></div>
+        <div class="bg-white rounded-lg card-shadow p-6"><div class="flex justify-between items-start mb-4"><div><p class="text-gray-600 text-sm font-medium">Tiến độ mục tiêu</p><p class="text-4xl font-bold mt-2" style="color:#10b981">68%</p></div><i data-lucide="trending-up" class="w-8 h-8" style="color:#10b981; opacity:0.3;"></i></div><p class="text-xs text-gray-500">Đạt được 17kg trong 25kg</p></div>
+        <div class="bg-white rounded-lg card-shadow p-6"><div class="flex justify-between items-start mb-4"><div><p class="text-gray-600 text-sm font-medium">Điểm thưởng</p><p class="text-4xl font-bold mt-2" style="color:#f59e0b">2,450</p></div><i data-lucide="star" class="w-8 h-8" style="color:#f59e0b; opacity:0.3;"></i></div><p class="text-xs text-gray-500">Có thể dùng để đổi quà</p></div>
+       </div>
+       <div class="grid grid-cols-2 gap-8">
+        <div class="bg-white rounded-lg card-shadow p-8"><div class="flex items-center justify-between mb-6"><h2 class="text-xl font-bold">Lịch tập tuần này</h2><i data-lucide="calendar" class="w-5 h-5 text-gray-400"></i></div><div class="space-y-4"><div class="flex items-center gap-4 p-3 bg-gray-50 rounded-lg"><div class="w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0" style="background:rgba(240,78,35,0.1)"><span class="text-lg">🏋️</span></div><div class="flex-1"><p class="font-bold text-sm">Strength Training</p><p class="text-xs text-gray-500">Thứ Hai, 6:00 AM</p></div><span class="badge badge-green">Đặt lịch</span></div><div class="flex items-center gap-4 p-3 bg-gray-50 rounded-lg"><div class="w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0" style="background:rgba(240,78,35,0.1)"><span class="text-lg">🧘</span></div><div class="flex-1"><p class="font-bold text-sm">Yoga &amp; Flexibility</p><p class="text-xs text-gray-500">Thứ Tư, 7:00 PM</p></div><span class="badge badge-green">Đặt lịch</span></div><div class="flex items-center gap-4 p-3 bg-gray-50 rounded-lg"><div class="w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0" style="background:rgba(240,78,35,0.1)"><span class="text-lg">💃</span></div><div class="flex-1"><p class="font-bold text-sm">Zumba Dance</p><p class="text-xs text-gray-500">Thứ Sáu, 6:30 PM</p></div><span class="badge badge-green">Đặt lịch</span></div></div><button class="btn-primary w-full mt-6">Xem toàn bộ lịch</button></div>
+        <div class="bg-white rounded-lg card-shadow p-8"><div class="flex items-center justify-between mb-6"><h2 class="text-xl font-bold">Tiến độ tuần này</h2><i data-lucide="bar-chart-2" class="w-5 h-5 text-gray-400"></i></div><div class="space-y-6"><div><div class="flex justify-between mb-2"><p class="text-sm font-bold">Lớp tập hoàn thành</p><p class="text-sm font-bold" style="color:var(--primary)">5/8</p></div><div class="w-full bg-gray-200 rounded-full h-2"><div class="rounded-full h-2" style="width:62.5%;background:var(--primary)"></div></div></div><div><div class="flex justify-between mb-2"><p class="text-sm font-bold">Calo đốt</p><p class="text-sm font-bold" style="color:#10b981">3,240/3,500 kcal</p></div><div class="w-full bg-gray-200 rounded-full h-2"><div class="bg-green-500 rounded-full h-2" style="width:92.6%"></div></div></div><div><div class="flex justify-between mb-2"><p class="text-sm font-bold">Nước uống</p><p class="text-sm font-bold" style="color:#3b82f6">2.0/2.5 L</p></div><div class="w-full bg-gray-200 rounded-full h-2"><div class="bg-blue-500 rounded-full h-2" style="width:80%"></div></div></div><div class="bg-blue-50 border border-blue-200 p-4 rounded-lg mt-6"><p class="text-sm font-bold text-blue-900 mb-2">💡 Lời khuyên:</p><p class="text-sm text-blue-800">Bạn đang tiến gần đến mục tiêu calo tuần này. Cố gắng thêm một lớp tập nữa!</p></div></div></div>
+       </div>
+       <div class="mt-8 bg-white rounded-lg card-shadow p-8"><h2 class="text-xl font-bold mb-6">Nội dung gợi ý cho bạn</h2><div class="grid grid-cols-4 gap-6"><div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-6 text-center cursor-pointer hover:shadow-lg transition-all"><span class="text-4xl block mb-3">📚</span><p class="font-bold text-sm">Hướng dẫn dinh dưỡng</p><p class="text-xs text-gray-600 mt-2">Bí quyết ăn uống khỏe mạnh</p></div><div class="bg-gradient-to-br from-green-50 to-green-100 rounded-lg p-6 text-center cursor-pointer hover:shadow-lg transition-all"><span class="text-4xl block mb-3">🎯</span><p class="font-bold text-sm">Mục tiêu fitness</p><p class="text-xs text-gray-600 mt-2">Lập kế hoạch chi tiết</p></div><div class="bg-gradient-to-br from-orange-50 to-orange-100 rounded-lg p-6 text-center cursor-pointer hover:shadow-lg transition-all"><span class="text-4xl block mb-3">🏅</span><p class="font-bold text-sm">Thử thách tuần</p><p class="text-xs text-gray-600 mt-2">Tham gia và nhận quà</p></div><div class="bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg p-6 text-center cursor-pointer hover:shadow-lg transition-all"><span class="text-4xl block mb-3">🎓</span><p class="font-bold text-sm">Video hướng dẫn</p><p class="text-xs text-gray-600 mt-2">Tập luyện đúng kỹ thuật</p></div></div></div>
+      </div>
+     </div>
+     <div id="student-qna-tab" class="hidden">
+      <div class="max-w-4xl mx-auto">
+       <div class="mb-8"><h1 class="text-3xl font-bold mb-2">Giải đáp thắc mắc</h1><p class="text-gray-600">Hỏi những thắc mắc của bạn, đội ngũ của chúng tôi sẽ giúp bạn sớm nhất.</p></div>
+       <button class="btn-primary mb-8" onclick="app.showQNAModal()">+ Gửi câu hỏi mới</button>
+       <div id="student-qna-list" class="space-y-4"></div>
+      </div>
+     </div>
+    </div>
+   </div>
+
+   <!-- ══════════ STAFF DASHBOARD ══════════ -->
+   <div id="staff-dashboard" class="hidden main-wrapper">
+    <div class="sidebar">
+     <div class="p-4 border-b border-white border-opacity-20"><div class="flex items-center gap-2 text-white mb-2"><div class="w-8 h-8 rounded-full flex items-center justify-center bg-white bg-opacity-20 font-bold text-sm">PT</div><div><p class="text-sm font-bold">Phạm Trọng</p><p class="text-xs opacity-75">Huấn luyện viên</p></div></div></div>
+     <div class="sidebar-menu">
+      <div class="menu-item active" onclick="app.switchStaffTab(event,'home')"><i data-lucide="home" class="w-4 h-4"></i><span>Trang chủ</span></div>
+      <div class="menu-item" onclick="app.switchStaffTab(event,'qna')"><i data-lucide="message-circle" class="w-4 h-4"></i><span>Giải đáp thắc mắc</span><span id="staff-qna-badge" class="ml-auto hidden text-xs font-bold bg-white text-red-500 rounded-full px-2 py-0.5"></span></div>
+      <div class="menu-item" onclick="app.logout()"><i data-lucide="log-out" class="w-4 h-4"></i><span>Đăng xuất</span></div>
+     </div>
+    </div>
+    <nav class="navbar">
+     <div class="flex items-center justify-between w-full">
+      <div class="flex items-center gap-3"><div class="w-10 h-10 rounded-lg flex items-center justify-center" style="background:var(--primary)"><i data-lucide="dumbbell" class="w-6 h-6 text-white"></i></div><span class="font-bold text-xl text-gray-900">TFitness</span></div>
+      <div class="flex items-center gap-3 cursor-pointer" onclick="app.showLoginModal()"><div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-white text-sm" style="background:var(--primary)">PT</div><span class="text-sm font-medium">Phạm Trọng</span><i data-lucide="chevron-down" class="w-4 h-4 text-gray-600"></i></div>
+     </div>
+    </nav>
+    <div class="content">
+     <div id="staff-home-tab">
+      <div class="max-w-7xl mx-auto">
+       <div class="hero-gradient rounded-xl p-12 text-white mb-8"><div class="flex justify-between items-start"><div class="flex-1"><h1 class="text-5xl font-extrabold mb-2">Xin chào, Phạm Trọng! 👋</h1><p class="text-xl opacity-95">Quản lý các câu hỏi từ học viên</p></div><div class="text-right"><p class="text-sm opacity-75">Chức vụ</p><p class="text-3xl font-bold">Huấn luyện viên</p></div></div></div>
+       <div class="grid grid-cols-3 gap-6 mb-8">
+        <div class="bg-white rounded-lg card-shadow p-6"><div class="flex justify-between items-start mb-4"><div><p class="text-gray-600 text-sm font-medium">Chờ trả lời</p><p id="staff-stat-pending" class="text-4xl font-bold mt-2" style="color:var(--primary)">0</p></div><i data-lucide="message-circle" class="w-8 h-8" style="color:var(--primary); opacity:0.3;"></i></div><p class="text-xs text-gray-500">Những câu hỏi cần xử lý</p></div>
+        <div class="bg-white rounded-lg card-shadow p-6"><div class="flex justify-between items-start mb-4"><div><p class="text-gray-600 text-sm font-medium">Đã trả lời</p><p id="staff-stat-answered" class="text-4xl font-bold mt-2" style="color:#10b981">0</p></div><i data-lucide="check-circle" class="w-8 h-8" style="color:#10b981; opacity:0.3;"></i></div><p class="text-xs text-gray-500">Câu hỏi đã xử lý</p></div>
+        <div class="bg-white rounded-lg card-shadow p-6"><div class="flex justify-between items-start mb-4"><div><p class="text-gray-600 text-sm font-medium">Tổng câu hỏi</p><p id="staff-stat-total" class="text-4xl font-bold mt-2" style="color:#6b7280">0</p></div><i data-lucide="help-circle" class="w-8 h-8" style="color:#6b7280; opacity:0.3;"></i></div><p class="text-xs text-gray-500">Từ lúc bắt đầu</p></div>
+       </div>
+       <div class="grid grid-cols-2 gap-8">
+        <div class="bg-white rounded-lg card-shadow p-8">
+         <div class="flex items-center justify-between mb-6"><h2 class="text-xl font-bold">Câu hỏi chờ trả lời</h2><button class="text-sm font-semibold" style="color:var(--primary)" onclick="app.switchStaffTabById('qna')">Xem tất cả →</button></div>
+         <div class="staff-qna-list space-y-3"></div>
+        </div>
+        <div class="bg-white rounded-lg card-shadow p-8"><div class="flex items-center justify-between mb-6"><h2 class="text-xl font-bold">Hoạt động gần đây</h2><i data-lucide="activity" class="w-5 h-5 text-gray-400"></i></div><div class="space-y-4"><div class="flex items-start gap-4 p-3 bg-gray-50 rounded-lg"><div class="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0" style="background:rgba(240,78,35,0.1)"><i data-lucide="message-square" class="w-5 h-5" style="color:var(--primary);"></i></div><div class="flex-1"><p class="font-bold text-sm">Trả lời câu hỏi</p><p class="text-xs text-gray-500">5 phút trước</p></div></div><div class="flex items-start gap-4 p-3 bg-gray-50 rounded-lg"><div class="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0" style="background:rgba(16,185,129,0.1)"><i data-lucide="check" class="w-5 h-5" style="color:#10b981;"></i></div><div class="flex-1"><p class="font-bold text-sm">Hoàn thành 3 câu hỏi</p><p class="text-xs text-gray-500">30 phút trước</p></div></div><div class="flex items-start gap-4 p-3 bg-gray-50 rounded-lg"><div class="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0" style="background:rgba(245,158,11,0.1)"><i data-lucide="star" class="w-5 h-5" style="color:#f59e0b;"></i></div><div class="flex-1"><p class="font-bold text-sm">Nhận rating 5 sao</p><p class="text-xs text-gray-500">1 giờ trước</p></div></div><div class="flex items-start gap-4 p-3 bg-gray-50 rounded-lg"><div class="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0" style="background:rgba(99,102,241,0.1)"><i data-lucide="trending-up" class="w-5 h-5" style="color:#6366f1;"></i></div><div class="flex-1"><p class="font-bold text-sm">Bạn đạt top 3 tuần này</p><p class="text-xs text-gray-500">2 giờ trước</p></div></div></div></div>
+       </div>
+       <div class="mt-8 bg-white rounded-lg card-shadow p-8"><div class="flex items-center justify-between mb-6"><h2 class="text-xl font-bold">Thống kê hiệu suất</h2><i data-lucide="bar-chart-2" class="w-5 h-5 text-gray-400"></i></div><div class="grid grid-cols-4 gap-6"><div class="text-center p-4 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg"><p class="text-4xl font-bold" style="color:#3b82f6">92%</p><p class="text-sm text-gray-600 mt-2">Tỷ lệ hài lòng</p></div><div class="text-center p-4 bg-gradient-to-br from-green-50 to-green-100 rounded-lg"><p class="text-4xl font-bold" style="color:#10b981">2.2h</p><p class="text-sm text-gray-600 mt-2">Thời gian trả lời TB</p></div><div class="text-center p-4 bg-gradient-to-br from-orange-50 to-orange-100 rounded-lg"><p class="text-4xl font-bold" style="color:#f59e0b">156</p><p class="text-sm text-gray-600 mt-2">Tổng câu trả lời</p></div><div class="text-center p-4 bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg"><p class="text-4xl font-bold" style="color:#8b5cf6">⭐ 4.8</p><p class="text-sm text-gray-600 mt-2">Rating trung bình</p></div></div></div>
+      </div>
+     </div>
+     <div id="staff-qna-tab" class="hidden">
+      <div class="max-w-5xl mx-auto">
+       <div class="mb-8"><h1 class="text-3xl font-bold mb-2">Giải đáp thắc mắc</h1><p class="text-gray-600">Xem và trả lời các câu hỏi từ học viên của bạn.</p></div>
+       <div class="grid grid-cols-3 gap-6 mb-8">
+        <div class="bg-white rounded-lg card-shadow p-5 flex items-center gap-4"><div class="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0" style="background:rgba(240,78,35,0.1)"><i data-lucide="inbox" class="w-6 h-6" style="color:var(--primary)"></i></div><div><p class="text-gray-500 text-sm">Chờ trả lời</p><p id="qna-page-stat-pending" class="text-3xl font-bold" style="color:var(--primary)">0</p></div></div>
+        <div class="bg-white rounded-lg card-shadow p-5 flex items-center gap-4"><div class="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0" style="background:rgba(16,185,129,0.1)"><i data-lucide="check-circle" class="w-6 h-6" style="color:#10b981"></i></div><div><p class="text-gray-500 text-sm">Đã trả lời</p><p id="qna-page-stat-answered" class="text-3xl font-bold" style="color:#10b981">0</p></div></div>
+        <div class="bg-white rounded-lg card-shadow p-5 flex items-center gap-4"><div class="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0" style="background:rgba(107,114,128,0.1)"><i data-lucide="help-circle" class="w-6 h-6" style="color:#6b7280"></i></div><div><p class="text-gray-500 text-sm">Tổng câu hỏi</p><p id="qna-page-stat-total" class="text-3xl font-bold" style="color:#6b7280">0</p></div></div>
+       </div>
+       <div class="bg-white rounded-xl card-shadow p-6">
+        <div class="flex items-center gap-3 mb-6"><button class="qna-filter-tab active" id="filter-all" onclick="app.filterStaffQNA('all')">Tất cả</button><button class="qna-filter-tab" id="filter-pending" onclick="app.filterStaffQNA('pending')">Chờ trả lời</button><button class="qna-filter-tab" id="filter-answered" onclick="app.filterStaffQNA('answered')">Đã trả lời</button></div>
+        <div class="relative mb-6"><i data-lucide="search" class="w-4 h-4 text-gray-400 absolute left-4 top-3.5"></i><input type="text" id="qna-search" class="input-field pl-10" placeholder="Tìm kiếm câu hỏi..." oninput="app.filterStaffQNA(app.currentQNAFilter)"></div>
+        <div id="staff-qna-full-list"></div>
+       </div>
+      </div>
+     </div>
+    </div>
+   </div>
+
+   <!-- ══════════ ADMIN DASHBOARD ══════════ -->
+   <div id="admin-dashboard" class="hidden main-wrapper">
+    <div class="sidebar">
+     <div class="p-4 border-b border-white border-opacity-20"><div class="flex items-center gap-2 text-white mb-2"><div class="w-8 h-8 rounded-full flex items-center justify-center bg-white bg-opacity-20 font-bold text-sm">AD</div><div><p class="text-sm font-bold">Admin</p><p class="text-xs opacity-75">Quản trị viên</p></div></div></div>
+     <div class="sidebar-menu">
+      <div class="menu-item active" onclick="app.switchAdminTab('dashboard')"><i data-lucide="home" class="w-4 h-4"></i><span>Trang chủ</span></div>
+      <div class="menu-item" onclick="app.switchAdminTab('reports')"><i data-lucide="bar-chart-2" class="w-4 h-4"></i><span>Báo cáo thống kê</span></div>
+      <div class="menu-item" onclick="app.logout()"><i data-lucide="log-out" class="w-4 h-4"></i><span>Đăng xuất</span></div>
+     </div>
+    </div>
+    <nav class="navbar">
+     <div class="flex items-center justify-between w-full">
+      <div class="flex items-center gap-3"><div class="w-10 h-10 rounded-lg flex items-center justify-center" style="background:var(--primary)"><i data-lucide="dumbbell" class="w-6 h-6 text-white"></i></div><span class="font-bold text-xl text-gray-900">TFitness</span></div>
+      <div class="flex items-center gap-3 cursor-pointer" onclick="app.showLoginModal()"><div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-white text-sm" style="background:var(--primary)">AD</div><span class="text-sm font-medium">Admin</span><i data-lucide="chevron-down" class="w-4 h-4 text-gray-600"></i></div>
+     </div>
+    </nav>
+    <div class="content">
+     <div id="admin-dashboard-tab">
+      <div class="max-w-7xl mx-auto">
+       <div class="hero-gradient rounded-xl p-12 text-white mb-8"><div class="flex justify-between items-start"><div class="flex-1"><h1 class="text-5xl font-extrabold mb-2">Xin chào, Admin! 👋</h1><p class="text-xl opacity-95">Xem báo cáo thống kê toàn diện của hệ thống</p></div><div class="text-right"><p class="text-sm opacity-75">Vai trò</p><p class="text-3xl font-bold">Quản trị viên</p></div></div></div>
+       <div class="grid grid-cols-4 gap-6 mb-8">
+        <div class="bg-white rounded-lg card-shadow p-6"><div class="flex justify-between items-start mb-4"><div><p class="text-gray-600 text-sm font-medium">Tổng học viên</p><p class="text-4xl font-bold mt-2" style="color:var(--primary)">1,245</p></div><i data-lucide="users" class="w-8 h-8" style="color:var(--primary); opacity:0.3;"></i></div><p class="text-xs text-green-600">↑ +12% tháng này</p></div>
+        <div class="bg-white rounded-lg card-shadow p-6"><div class="flex justify-between items-start mb-4"><div><p class="text-gray-600 text-sm font-medium">Doanh thu tháng</p><p class="text-3xl font-bold mt-2" style="color:#10b981">850M</p></div><i data-lucide="trending-up" class="w-8 h-8" style="color:#10b981; opacity:0.3;"></i></div><p class="text-xs text-gray-500">Tăng từ 760M tháng trước</p></div>
+        <div class="bg-white rounded-lg card-shadow p-6"><div class="flex justify-between items-start mb-4"><div><p class="text-gray-600 text-sm font-medium">Tỷ lệ gia hạn</p><p class="text-4xl font-bold mt-2" style="color:#f59e0b">84%</p></div><i data-lucide="percent" class="w-8 h-8" style="color:#f59e0b; opacity:0.3;"></i></div><p class="text-xs text-gray-500">Trên mục tiêu 80%</p></div>
+        <div class="bg-white rounded-lg card-shadow p-6"><div class="flex justify-between items-start mb-4"><div><p class="text-gray-600 text-sm font-medium">Huấn luyện viên</p><p class="text-4xl font-bold mt-2" style="color:#8b5cf6">48</p></div><i data-lucide="user-check" class="w-8 h-8" style="color:#8b5cf6; opacity:0.3;"></i></div><p class="text-xs text-gray-500">Tích cực hoạt động</p></div>
+       </div>
+       <div class="grid grid-cols-2 gap-8">
+        <div class="bg-white rounded-lg card-shadow p-8"><div class="flex items-center justify-between mb-6"><h2 class="text-xl font-bold">KPI tháng này</h2><i data-lucide="target" class="w-5 h-5 text-gray-400"></i></div><div class="space-y-6"><div><div class="flex justify-between mb-2"><p class="text-sm font-bold">Tiêu chí doanh thu</p><p class="text-sm font-bold" style="color:var(--primary)">94/100</p></div><div class="w-full bg-gray-200 rounded-full h-2"><div class="rounded-full h-2" style="width:94%;background:var(--primary)"></div></div></div><div><div class="flex justify-between mb-2"><p class="text-sm font-bold">Tiêu chí tuyển dụng</p><p class="text-sm font-bold" style="color:#10b981">87/100</p></div><div class="w-full bg-gray-200 rounded-full h-2"><div class="bg-green-500 rounded-full h-2" style="width:87%"></div></div></div><div><div class="flex justify-between mb-2"><p class="text-sm font-bold">Tiêu chí gia hạn</p><p class="text-sm font-bold" style="color:#f59e0b">84/100</p></div><div class="w-full bg-gray-200 rounded-full h-2"><div class="bg-yellow-500 rounded-full h-2" style="width:84%"></div></div></div><div><div class="flex justify-between mb-2"><p class="text-sm font-bold">Tiêu chí hài lòng KH</p><p class="text-sm font-bold" style="color:#3b82f6">91/100</p></div><div class="w-full bg-gray-200 rounded-full h-2"><div class="bg-blue-500 rounded-full h-2" style="width:91%"></div></div></div></div></div>
+        <div class="bg-white rounded-lg card-shadow p-8"><div class="flex items-center justify-between mb-6"><h2 class="text-xl font-bold">Hoạt động hệ thống</h2><i data-lucide="activity" class="w-5 h-5 text-gray-400"></i></div><div class="space-y-4"><div class="flex items-start gap-4 p-3 bg-gray-50 rounded-lg"><div class="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0" style="background:rgba(240,78,35,0.1)"><i data-lucide="user-plus" class="w-5 h-5" style="color:var(--primary);"></i></div><div class="flex-1"><p class="font-bold text-sm">12 học viên mới đăng ký</p><p class="text-xs text-gray-500">Hôm nay</p></div></div><div class="flex items-start gap-4 p-3 bg-gray-50 rounded-lg"><div class="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0" style="background:rgba(16,185,129,0.1)"><i data-lucide="credit-card" class="w-5 h-5" style="color:#10b981;"></i></div><div class="flex-1"><p class="font-bold text-sm">Doanh thu hôm nay: 42M</p><p class="text-xs text-gray-500">Tăng 8% so với hôm qua</p></div></div><div class="flex items-start gap-4 p-3 bg-gray-50 rounded-lg"><div class="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0" style="background:rgba(245,158,11,0.1)"><i data-lucide="alert-circle" class="w-5 h-5" style="color:#f59e0b;"></i></div><div class="flex-1"><p class="font-bold text-sm">3 gói sắp hết hạn</p><p class="text-xs text-gray-500">Cần gia hạn trong 7 ngày</p></div></div><div class="flex items-start gap-4 p-3 bg-gray-50 rounded-lg"><div class="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0" style="background:rgba(99,102,241,0.1)"><i data-lucide="settings" class="w-5 h-5" style="color:#6366f1;"></i></div><div class="flex-1"><p class="font-bold text-sm">Backup hệ thống thành công</p><p class="text-xs text-gray-500">2 giờ trước</p></div></div></div></div>
+       </div>
+       <div class="mt-8 bg-white rounded-lg card-shadow p-8"><div class="flex items-center justify-between mb-6"><h2 class="text-xl font-bold">Gói tập phổ biến</h2><button class="btn-primary" onclick="app.switchAdminTab('reports')">Xem báo cáo chi tiết →</button></div><div class="grid grid-cols-4 gap-6"><div class="text-center p-6 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg border border-blue-200"><p class="text-3xl font-bold text-blue-600">620</p><p class="text-sm text-gray-600 mt-2">Gói Premium</p><p class="text-xs text-gray-500 mt-1">49.7% tổng số</p></div><div class="text-center p-6 bg-gradient-to-br from-green-50 to-green-100 rounded-lg border border-green-200"><p class="text-3xl font-bold text-green-600">512</p><p class="text-sm text-gray-600 mt-2">Gói Basic</p><p class="text-xs text-gray-500 mt-1">41.1% tổng số</p></div><div class="text-center p-6 bg-gradient-to-br from-orange-50 to-orange-100 rounded-lg border border-orange-200"><p class="text-3xl font-bold text-orange-600">96</p><p class="text-sm text-gray-600 mt-2">Gói VIP</p><p class="text-xs text-gray-500 mt-1">7.7% tổng số</p></div><div class="text-center p-6 bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg border border-purple-200"><p class="text-3xl font-bold text-purple-600">17</p><p class="text-sm text-gray-600 mt-2">Hủy gói</p><p class="text-xs text-gray-500 mt-1">1.4% tổng số</p></div></div></div>
+      </div>
+     </div>
+
+     <!-- ══ REPORTS TAB (NEW: live preview + export) ══ -->
+     <div id="admin-reports-tab" class="hidden">
+      <div class="max-w-7xl mx-auto">
+       <div class="flex items-start justify-between mb-8 no-print">
+        <div><h1 class="text-3xl font-bold mb-1">Báo cáo thống kê</h1><p class="text-gray-500 text-sm">Chọn loại báo cáo và kỳ — dashboard cập nhật ngay lập tức.</p></div>
+        <div class="exp-wrap" id="expWrap">
+         <button class="btn-primary flex items-center gap-2" onclick="app.toggleExpMenu()"><i data-lucide="download" class="w-4 h-4"></i>Xuất báo cáo<i data-lucide="chevron-down" class="w-4 h-4"></i></button>
+         <div class="exp-menu" id="expMenu">
+          <div class="exp-item" onclick="app.exportReport('pdf')"><span class="ei-icon">📄</span><div><p class="font-semibold text-sm">Xuất PDF</p><p class="text-xs text-gray-500">In trực tiếp ra file PDF</p></div></div>
+          <div class="exp-item" onclick="app.exportReport('excel')"><span class="ei-icon">📊</span><div><p class="font-semibold text-sm">Xuất Excel (.xls)</p><p class="text-xs text-gray-500">Dữ liệu dạng bảng tính</p></div></div>
+          <div class="exp-item" onclick="app.exportReport('csv')"><span class="ei-icon">📋</span><div><p class="font-semibold text-sm">Xuất CSV</p><p class="text-xs text-gray-500">Dữ liệu văn bản thuần</p></div></div>
+         </div>
+        </div>
+       </div>
+       <div class="report-builder">
+        <!-- Options panel -->
+        <div class="no-print" style="position:sticky;top:20px">
+         <div class="bg-white rounded-xl card-shadow p-5 mb-4">
+          <p class="font-bold mb-3 text-gray-500 uppercase tracking-wide" style="font-size:11px">Loại báo cáo</p>
+          <div id="rtype-list">
+           <div class="report-type-card selected" onclick="app.selectReportType('business')"><div class="rtype-icon" style="background:#fff0eb">📊</div><div><p class="font-bold text-sm">Tổng quan kinh doanh</p><p class="text-xs text-gray-500">KPI · doanh thu · tăng trưởng</p></div></div>
+           <div class="report-type-card" onclick="app.selectReportType('services')"><div class="rtype-icon" style="background:#eff6ff">🏋️</div><div><p class="font-bold text-sm">Dịch vụ &amp; gói tập</p><p class="text-xs text-gray-500">Phân bố gói · lớp phổ biến</p></div></div>
+           <div class="report-type-card" onclick="app.selectReportType('staff')"><div class="rtype-icon" style="background:#f5f3ff">👤</div><div><p class="font-bold text-sm">Huấn luyện viên</p><p class="text-xs text-gray-500">Xếp hạng · rating · giờ dạy</p></div></div>
+           <div class="report-type-card" onclick="app.selectReportType('finance')"><div class="rtype-icon" style="background:#f0fdf4">💰</div><div><p class="font-bold text-sm">Tài chính</p><p class="text-xs text-gray-500">Doanh thu · điểm thưởng</p></div></div>
+           <div class="report-type-card" onclick="app.selectReportType('customer')"><div class="rtype-icon" style="background:#fffbeb">👥</div><div><p class="font-bold text-sm">Phân tích khách hàng</p><p class="text-xs text-gray-500">Độ tuổi · mục tiêu · hành vi</p></div></div>
+          </div>
+         </div>
+         <div class="bg-white rounded-xl card-shadow p-5">
+          <p class="font-bold mb-3 text-gray-500 uppercase tracking-wide" style="font-size:11px">Kỳ báo cáo</p>
+          <div class="flex flex-wrap gap-2">
+           <button class="period-pill active" id="pill-month" onclick="app.selectPeriod('month')">Tháng này</button>
+           <button class="period-pill" id="pill-quarter" onclick="app.selectPeriod('quarter')">Quý này</button>
+           <button class="period-pill" id="pill-year" onclick="app.selectPeriod('year')">Năm nay</button>
+          </div>
+         </div>
+        </div>
+        <!-- Live preview -->
+        <div id="report-preview"></div>
+       </div>
+      </div>
+     </div>
+    </div>
+   </div>
+
+   <!-- ══════════ LOGIN MODAL ══════════ -->
+   <div id="login-overlay" class="hidden modal-overlay" onclick="event.target===this&&app.hideLoginModal()">
+    <div class="modal">
+     <div class="hero-gradient flex justify-between items-center p-6 border-b"><h2 class="text-xl font-bold">Đăng nhập hệ thống</h2><button onclick="app.hideLoginModal()"><i data-lucide="x" class="w-5 h-5 text-gray-400"></i></button></div>
+     <div class="p-6 space-y-6">
+      <div><p class="text-sm text-gray-600 mb-4">Chọn vai trò đăng nhập:</p><div class="space-y-3"><div class="radio-field selected" id="role-student" onclick="app.selectLoginRole('student')"><input type="radio" name="login-role" value="student" checked><div class="flex-1"><div class="flex items-center gap-3"><span class="text-2xl">🏋️</span><div><p class="font-bold">Học viên</p><p class="text-xs text-gray-500">Thành viên tập luyện</p></div></div></div></div><div class="radio-field" id="role-staff" onclick="app.selectLoginRole('staff')"><input type="radio" name="login-role" value="staff"><div class="flex-1"><div class="flex items-center gap-3"><span class="text-2xl">👤</span><div><p class="font-bold">Nhân viên</p><p class="text-xs text-gray-500">Cán bộ huấn luyện viên</p></div></div></div></div><div class="radio-field" id="role-admin" onclick="app.selectLoginRole('admin')"><input type="radio" name="login-role" value="admin"><div class="flex-1"><div class="flex items-center gap-3"><span class="text-2xl">⚙️</span><div><p class="font-bold">Quản trị viên</p><p class="text-xs text-gray-500">Quản lý hệ thống</p></div></div></div></div></div></div>
+      <div><label class="block font-bold text-sm mb-2">Email</label><input type="email" id="login-email" class="input-field" placeholder="Nhập email" value="demo@tfitness.com"></div>
+      <div><label class="block font-bold text-sm mb-2">Mật khẩu</label><div class="relative"><input type="password" id="login-password" class="input-field pr-10" value="password123"><i data-lucide="eye" class="w-5 h-5 text-gray-400 absolute right-3 top-3.5 cursor-pointer" onclick="app.togglePassword('login-password')"></i></div></div>
+      <div class="flex justify-end"><a href="#" class="text-sm link-primary" onclick="app.showForgotPassword();return false;">Quên mật khẩu?</a></div>
+      <p id="login-error" class="text-sm text-red-600 hidden"></p>
+      <button class="btn-primary w-full mt-2" id="login-btn" onclick="app.handleLogin()">Đăng nhập với vai trò Học viên</button>
+      <p class="text-sm text-center text-gray-500 mt-4">Chưa có tài khoản? <a href="#" class="link-primary" onclick="app.hideLoginModal();app.showRegistrationStep(1);return false;">Đăng ký ngay</a></p>
+     </div>
+    </div>
+   </div>
+
+   <!-- ══════════ FORGOT PASSWORD MODAL ══════════ -->
+   <div id="forgot-overlay" class="hidden modal-overlay" onclick="event.target===this&&app.hideForgotPassword()">
+    <div class="modal">
+     <div class="flex justify-between items-center p-6 border-b">
+      <div>
+       <h2 class="text-xl font-bold">Lấy lại mật khẩu</h2>
+       <p class="text-xs text-gray-500 mt-0.5" id="fp-step-label">Bước 1/3 — Xác nhận email</p>
+      </div>
+      <button onclick="app.hideForgotPassword()"><i data-lucide="x" class="w-5 h-5 text-gray-400"></i></button>
+     </div>
+     <!-- Step progress bar -->
+     <div class="px-6 pt-4">
+      <div class="flex items-center gap-2 mb-1">
+       <div id="fp-bar-1" class="h-1.5 flex-1 rounded-full transition-all duration-500" style="background:var(--primary)"></div>
+       <div id="fp-bar-2" class="h-1.5 flex-1 rounded-full transition-all duration-500 bg-gray-200"></div>
+       <div id="fp-bar-3" class="h-1.5 flex-1 rounded-full transition-all duration-500 bg-gray-200"></div>
+      </div>
+     </div>
+
+     <!-- STEP 1: Enter email -->
+     <div id="fp-step-1" class="p-6 space-y-5">
+      <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-start gap-3">
+       <span class="text-xl mt-0.5">📧</span>
+       <p class="text-sm text-blue-800">Nhập địa chỉ Gmail đã đăng ký trong hệ thống. Chúng tôi sẽ gửi mã xác thực về email của bạn.</p>
+      </div>
+      <div>
+       <label class="block font-bold text-sm mb-2">Địa chỉ Gmail *</label>
+       <input type="email" id="fp-email" class="input-field" placeholder="example@gmail.com">
+       <p id="fp-email-error" class="text-xs text-red-600 mt-1 hidden"></p>
+      </div>
+      <button class="btn-primary w-full" id="fp-send-btn" onclick="app.fpSendOTP()">Gửi mã xác thực</button>
+      <p class="text-sm text-center text-gray-500"><a href="#" class="link-primary" onclick="app.hideForgotPassword();app.showLoginModal();return false;">← Quay lại đăng nhập</a></p>
+     </div>
+
+     <!-- STEP 2: Enter OTP -->
+     <div id="fp-step-2" class="hidden p-6 space-y-5">
+      <div class="bg-green-50 border border-green-200 rounded-lg p-4 flex items-start gap-3">
+       <span class="text-xl mt-0.5">✅</span>
+       <div>
+        <p class="text-sm text-green-800 font-semibold">Mã xác thực đã được gửi!</p>
+        <p class="text-sm text-green-700 mt-0.5">Vui lòng kiểm tra hộp thư của <span id="fp-email-display" class="font-bold"></span></p>
+       </div>
+      </div>
+      <div>
+       <label class="block font-bold text-sm mb-3">Nhập mã xác thực (6 chữ số) *</label>
+       <div class="flex gap-3 justify-center">
+        <input type="text" maxlength="1" class="otp-box input-field text-center font-bold text-xl" style="width:52px;height:52px;padding:8px;" oninput="app.otpInput(this,0)" onkeydown="app.otpKeydown(event,0)">
+        <input type="text" maxlength="1" class="otp-box input-field text-center font-bold text-xl" style="width:52px;height:52px;padding:8px;" oninput="app.otpInput(this,1)" onkeydown="app.otpKeydown(event,1)">
+        <input type="text" maxlength="1" class="otp-box input-field text-center font-bold text-xl" style="width:52px;height:52px;padding:8px;" oninput="app.otpInput(this,2)" onkeydown="app.otpKeydown(event,2)">
+        <input type="text" maxlength="1" class="otp-box input-field text-center font-bold text-xl" style="width:52px;height:52px;padding:8px;" oninput="app.otpInput(this,3)" onkeydown="app.otpKeydown(event,3)">
+        <input type="text" maxlength="1" class="otp-box input-field text-center font-bold text-xl" style="width:52px;height:52px;padding:8px;" oninput="app.otpInput(this,4)" onkeydown="app.otpKeydown(event,4)">
+        <input type="text" maxlength="1" class="otp-box input-field text-center font-bold text-xl" style="width:52px;height:52px;padding:8px;" oninput="app.otpInput(this,5)" onkeydown="app.otpKeydown(event,5)">
+       </div>
+       <p id="fp-otp-error" class="text-xs text-red-600 mt-2 hidden text-center"></p>
+      </div>
+      <div class="flex items-center justify-between text-sm">
+       <span class="text-gray-500">Chưa nhận được mã?</span>
+       <button id="fp-resend-btn" class="link-primary font-semibold" onclick="app.fpResendOTP()">Gửi lại mã</button>
+      </div>
+      <div id="fp-countdown" class="text-center text-sm text-gray-500 hidden">
+       Gửi lại sau <span id="fp-timer" class="font-bold" style="color:var(--primary)">60</span> giây
+      </div>
+      <button class="btn-primary w-full" onclick="app.fpVerifyOTP()">Xác nhận mã</button>
+      <p class="text-sm text-center text-gray-500"><a href="#" class="link-primary" onclick="app.fpGoToStep(1);return false;">← Đổi email khác</a></p>
+     </div>
+
+     <!-- STEP 3: New password -->
+     <div id="fp-step-3" class="hidden p-6 space-y-5">
+      <div class="bg-orange-50 border border-orange-200 rounded-lg p-4 flex items-start gap-3">
+       <span class="text-xl mt-0.5">🔐</span>
+       <p class="text-sm text-orange-800">Mã xác thực hợp lệ. Hãy đặt mật khẩu mới cho tài khoản của bạn.</p>
+      </div>
+      <div>
+       <label class="block font-bold text-sm mb-2">Mật khẩu mới *</label>
+       <div class="relative">
+        <input type="password" id="fp-new-password" class="input-field pr-10" placeholder="Tối thiểu 8 ký tự" oninput="app.fpCheckStrength()">
+        <i data-lucide="eye" class="w-5 h-5 text-gray-400 absolute right-3 top-3.5 cursor-pointer" onclick="app.togglePassword('fp-new-password')"></i>
+       </div>
+       <!-- Strength bar -->
+       <div class="mt-2 space-y-1">
+        <div class="flex gap-1">
+         <div id="fp-s1" class="h-1.5 flex-1 rounded-full bg-gray-200 transition-all duration-300"></div>
+         <div id="fp-s2" class="h-1.5 flex-1 rounded-full bg-gray-200 transition-all duration-300"></div>
+         <div id="fp-s3" class="h-1.5 flex-1 rounded-full bg-gray-200 transition-all duration-300"></div>
+         <div id="fp-s4" class="h-1.5 flex-1 rounded-full bg-gray-200 transition-all duration-300"></div>
+        </div>
+        <p id="fp-strength-label" class="text-xs text-gray-400"></p>
+       </div>
+      </div>
+      <div>
+       <label class="block font-bold text-sm mb-2">Xác nhận mật khẩu mới *</label>
+       <div class="relative">
+        <input type="password" id="fp-confirm-password" class="input-field pr-10" placeholder="Nhập lại mật khẩu">
+        <i data-lucide="eye" class="w-5 h-5 text-gray-400 absolute right-3 top-3.5 cursor-pointer" onclick="app.togglePassword('fp-confirm-password')"></i>
+       </div>
+      </div>
+      <p id="fp-pw-error" class="text-xs text-red-600 hidden"></p>
+      <button class="btn-primary w-full" onclick="app.fpSavePassword()">Lưu mật khẩu mới</button>
+     </div>
+
+     <!-- STEP 4: Success -->
+     <div id="fp-step-4" class="hidden p-8 text-center space-y-4">
+      <div class="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4" style="background:rgba(16,185,129,0.1)">
+       <i data-lucide="check-circle" class="w-10 h-10" style="color:#10b981"></i>
+      </div>
+      <h3 class="text-2xl font-extrabold text-gray-900">Đổi mật khẩu thành công!</h3>
+      <p class="text-gray-500">Mật khẩu mới của bạn đã được lưu. Bạn có thể đăng nhập lại ngay bây giờ.</p>
+      <button class="btn-primary w-full mt-4" onclick="app.hideForgotPassword();app.showLoginModal()">Đăng nhập ngay →</button>
+     </div>
+    </div>
+   </div>
+
+   <!-- QNA MODAL -->
+   <div id="qna-modal-overlay" class="hidden modal-overlay" onclick="event.target===this&&app.hideQNAModal()">
+    <div class="modal"><div class="flex justify-between items-center p-6 border-b"><h2 class="text-xl font-bold">Gửi câu hỏi mới</h2><button onclick="app.hideQNAModal()"><i data-lucide="x" class="w-5 h-5 text-gray-400"></i></button></div>
+    <div class="p-6 space-y-6"><div><label class="block font-bold text-sm mb-2">Tiêu đề câu hỏi *</label><input type="text" id="qna-title" class="input-field" placeholder="Nhập tiêu đề câu hỏi của bạn"></div><div><label class="block font-bold text-sm mb-2">Chi tiết câu hỏi *</label><textarea id="qna-message" class="input-field" rows="5" placeholder="Nhập nội dung chi tiết câu hỏi"></textarea></div><p id="qna-error" class="text-sm text-red-600 hidden"></p><button class="btn-primary w-full" id="qna-submit-btn" onclick="app.submitQNA()">Gửi câu hỏi</button></div></div>
+   </div>
+
+   <!-- RESPONSE MODAL -->
+   <div id="response-modal-overlay" class="hidden modal-overlay" onclick="event.target===this&&app.hideResponseModal()">
+    <div class="modal"><div class="flex justify-between items-center p-6 border-b"><h2 class="text-xl font-bold">Trả lời câu hỏi</h2><button onclick="app.hideResponseModal()"><i data-lucide="x" class="w-5 h-5 text-gray-400"></i></button></div>
+    <div class="p-6 space-y-6"><div class="bg-gray-50 p-4 rounded-lg"><p class="font-bold text-sm mb-2">Câu hỏi từ: <span id="response-from" class="font-normal text-gray-700"></span></p><p class="font-bold mb-2" id="response-title"></p><p class="text-sm text-gray-700" id="response-message"></p></div><div><label class="block font-bold text-sm mb-2">Trả lời *</label><textarea id="response-text" class="input-field" rows="6" placeholder="Nhập câu trả lời của bạn"></textarea></div><p id="response-error" class="text-sm text-red-600 hidden"></p><button class="btn-primary w-full" id="response-submit-btn" onclick="app.submitResponse()">Gửi trả lời</button></div></div>
+   </div>
+
+   <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+    lucide.createIcons();
+
+    /* ══════════ REPORT DATA ══════════ */
+    const RD = {
+      business: {
+        month:   { nm:156, rev:'850M', renew:'84%', cancel:'3.2%', d:['+8.2%','+11.8%','+2.1%','-0.5%'], bars:[620,700,710,730,760,850], bl:['T1','T2','T3','T4','T5','T6'] },
+        quarter: { nm:412, rev:'2.4T', renew:'82%', cancel:'3.8%', d:['+10.1%','+9.5%','+1.8%','-0.3%'], bars:[640,700,760,850], bl:['Tháng 1','Tháng 2','Tháng 3','Tháng 4'] },
+        year:    { nm:1850, rev:'9.8T', renew:'80%', cancel:'4.1%', d:['+15.2%','+12.3%','+3.5%','-1.2%'], bars:[600,640,670,700,730,760,790,800,820,830,840,850], bl:['1','2','3','4','5','6','7','8','9','10','11','12'] }
+      },
+      services: {
+        month:   { pkgs:[{n:'Gói Premium',c:620,p:'49.7%',cl:'#3b82f6'},{n:'Gói Basic',c:512,p:'41.1%',cl:'#10b981'},{n:'Gói VIP',c:96,p:'7.7%',cl:'#f59e0b'},{n:'Hủy gói',c:17,p:'1.4%',cl:'#ef4444'}], cls:[{n:'Yoga',s:148},{n:'Strength',s:132},{n:'Zumba',s:115},{n:'Pilates',s:89}] },
+        quarter: { pkgs:[{n:'Gói Premium',c:1840,p:'48.5%',cl:'#3b82f6'},{n:'Gói Basic',c:1560,p:'41.1%',cl:'#10b981'},{n:'Gói VIP',c:290,p:'7.6%',cl:'#f59e0b'},{n:'Hủy gói',c:110,p:'2.9%',cl:'#ef4444'}], cls:[{n:'Yoga',s:420},{n:'Strength',s:380},{n:'Zumba',s:340},{n:'Pilates',s:260}] },
+        year:    { pkgs:[{n:'Gói Premium',c:7200,p:'49.2%',cl:'#3b82f6'},{n:'Gói Basic',c:6100,p:'41.7%',cl:'#10b981'},{n:'Gói VIP',c:1100,p:'7.5%',cl:'#f59e0b'},{n:'Hủy gói',c:230,p:'1.6%',cl:'#ef4444'}], cls:[{n:'Yoga',s:1680},{n:'Strength',s:1540},{n:'Zumba',s:1320},{n:'Pilates',s:1020}] }
+      },
+      staff: {
+        month:   [{n:'Nguyễn Minh Khoa',r:'4.9',s:48,a:86,sat:'96%'},{n:'Phạm Trọng',r:'4.8',s:44,a:72,sat:'92%'},{n:'Lê Thanh Huyền',r:'4.7',s:40,a:65,sat:'90%'},{n:'Trần Bảo Long',r:'4.6',s:36,a:58,sat:'88%'}],
+        quarter: [{n:'Nguyễn Minh Khoa',r:'4.9',s:142,a:254,sat:'95%'},{n:'Phạm Trọng',r:'4.8',s:130,a:218,sat:'92%'},{n:'Lê Thanh Huyền',r:'4.7',s:118,a:196,sat:'90%'},{n:'Trần Bảo Long',r:'4.5',s:108,a:174,sat:'87%'}],
+        year:    [{n:'Nguyễn Minh Khoa',r:'4.9',s:576,a:1020,sat:'95%'},{n:'Phạm Trọng',r:'4.8',s:528,a:864,sat:'92%'},{n:'Lê Thanh Huyền',r:'4.7',s:480,a:780,sat:'90%'},{n:'Trần Bảo Long',r:'4.5',s:432,a:696,sat:'87%'}]
+      },
+      finance: {
+        month:   { tot:'850M', pkg:'680M', svc:'170M', pi:'245K', pr:'89K', avg:'682K', g:'+11.8%' },
+        quarter: { tot:'2.4T', pkg:'1.92T', svc:'480M', pi:'720K', pr:'265K', avg:'695K', g:'+9.5%' },
+        year:    { tot:'9.8T', pkg:'7.84T', svc:'1.96T', pi:'2.9M', pr:'1.1M', avg:'710K', g:'+12.3%' }
+      },
+      customer: {
+        month:   { ag:[{l:'18–24',p:28,c:'#6366f1'},{l:'25–34',p:42,c:'#f04e23'},{l:'35–44',p:19,c:'#10b981'},{l:'45+',p:11,c:'#f59e0b'}], gl:[{n:'Giảm cân',p:45},{n:'Tăng cơ',p:30},{n:'Sức khỏe chung',p:18},{n:'Thi đấu',p:7}], ret:'84%', av:'9.2' },
+        quarter: { ag:[{l:'18–24',p:27,c:'#6366f1'},{l:'25–34',p:43,c:'#f04e23'},{l:'35–44',p:20,c:'#10b981'},{l:'45+',p:10,c:'#f59e0b'}], gl:[{n:'Giảm cân',p:44},{n:'Tăng cơ',p:31},{n:'Sức khỏe chung',p:19},{n:'Thi đấu',p:6}], ret:'82%', av:'9.8' },
+        year:    { ag:[{l:'18–24',p:26,c:'#6366f1'},{l:'25–34',p:44,c:'#f04e23'},{l:'35–44',p:20,c:'#10b981'},{l:'45+',p:10,c:'#f59e0b'}], gl:[{n:'Giảm cân',p:43},{n:'Tăng cơ',p:32},{n:'Sức khỏe chung',p:18},{n:'Thi đấu',p:7}], ret:'80%', av:'10.4' }
+      }
+    };
+    const TLABELS = { business:'Tổng quan kinh doanh', services:'Dịch vụ & gói tập', staff:'Huấn luyện viên', finance:'Tài chính', customer:'Phân tích khách hàng' };
+    const PLABELS = { month:'Tháng này', quarter:'Quý này', year:'Năm nay' };
+
+    /* ══════════ RENDER HELPERS ══════════ */
+    function prog(pct,col){ return `<div class="prog-track"><div class="prog-fill" style="width:${pct}%;background:${col}"></div></div>`; }
+
+    function renderBusiness(d){
+      const maxB=Math.max(...d.bars);
+      const bars=d.bars.map((v,i)=>`<div class="bar-col"><div class="bar-rect" style="height:${Math.round(v/maxB*68)}px;background:var(--primary);opacity:${(0.35+0.65*(v/maxB)).toFixed(2)}"></div><div class="bar-lbl">${d.bl[i]}</div></div>`).join('');
+      return `<div class="rcard"><h2>📊 Tổng quan kinh doanh</h2>
+        <div class="grid grid-cols-4 gap-4 mb-8">
+          <div class="kpi-tile" style="background:#eff6ff"><div style="font-size:22px">🏃</div><div class="kpi-val" style="color:#3b82f6">${d.nm}</div><div class="kpi-lbl">Học viên mới</div><div class="kpi-d d-up">${d.d[0]} vs kỳ trước</div></div>
+          <div class="kpi-tile" style="background:#f0fdf4"><div style="font-size:22px">💵</div><div class="kpi-val" style="color:#10b981">${d.rev}</div><div class="kpi-lbl">Doanh thu</div><div class="kpi-d d-up">${d.d[1]} vs kỳ trước</div></div>
+          <div class="kpi-tile" style="background:#fff7ed"><div style="font-size:22px">🔄</div><div class="kpi-val" style="color:#f97316">${d.renew}</div><div class="kpi-lbl">Tỷ lệ gia hạn</div><div class="kpi-d d-up">${d.d[2]} vs kỳ trước</div></div>
+          <div class="kpi-tile" style="background:#fef2f2"><div style="font-size:22px">⚠️</div><div class="kpi-val" style="color:#ef4444">${d.cancel}</div><div class="kpi-lbl">Tỷ lệ hủy gói</div><div class="kpi-d d-dn">${d.d[3]} vs kỳ trước</div></div>
+        </div>
+        <p class="font-bold text-sm text-gray-600 mb-3">Xu hướng doanh thu (triệu đồng)</p>
+        <div class="bar-wrap">${bars}</div>
+      </div>`;
+    }
+
+    function renderServices(d){
+      const pkgRows=d.pkgs.map(p=>`<tr><td><span class="inline-block w-3 h-3 rounded-full mr-2 align-middle" style="background:${p.cl}"></span>${p.n}</td><td class="font-bold">${p.c}</td><td>${prog(parseFloat(p.p),p.cl)}</td><td class="font-semibold">${p.p}</td></tr>`).join('');
+      const clsRows=d.cls.map((c,i)=>`<tr><td><span class="text-gray-400 font-bold mr-2">#${i+1}</span>${c.n}</td><td class="font-bold">${c.s}</td><td>${prog(Math.round(c.s/d.cls[0].s*100),'var(--primary)')}</td></tr>`).join('');
+      return `<div class="rcard"><h2>🏋️ Dịch vụ & gói tập</h2>
+        <p class="font-bold text-sm text-gray-600 mb-3">Phân bố gói tập</p>
+        <table class="rtab mb-7"><thead><tr><th>Gói</th><th>Số lượng</th><th>Tỷ lệ</th><th>%</th></tr></thead><tbody>${pkgRows}</tbody></table>
+        <p class="font-bold text-sm text-gray-600 mb-3">Lớp tập phổ biến</p>
+        <table class="rtab"><thead><tr><th>Lớp</th><th>Số buổi</th><th>Tần suất</th></tr></thead><tbody>${clsRows}</tbody></table>
+      </div>`;
+    }
+
+    function renderStaff(rows){
+      const tr=rows.map((r,i)=>`<tr><td><span class="text-gray-400 font-bold mr-2">#${i+1}</span><span class="font-semibold">${r.n}</span></td><td class="font-bold">⭐ ${r.r}</td><td>${r.s}</td><td>${r.a}</td><td><span class="badge badge-green">${r.sat}</span></td></tr>`).join('');
+      return `<div class="rcard"><h2>👤 Hiệu suất huấn luyện viên</h2>
+        <table class="rtab"><thead><tr><th>Tên HLV</th><th>Rating</th><th>Buổi dạy</th><th>Câu hỏi trả lời</th><th>Hài lòng</th></tr></thead><tbody>${tr}</tbody></table>
+      </div>`;
+    }
+
+    function renderFinance(d){
+      const items=[
+        {bg:'#f0fdf4',ic:'💰',v:d.tot,c:'#10b981',l:'Tổng doanh thu'},
+        {bg:'#eff6ff',ic:'📦',v:d.pkg,c:'#3b82f6',l:'Doanh thu gói tập'},
+        {bg:'#f5f3ff',ic:'🛎️',v:d.svc,c:'#8b5cf6',l:'Doanh thu dịch vụ'},
+        {bg:'#fffbeb',ic:'⭐',v:d.pi, c:'#f59e0b',l:'Điểm thưởng phát'},
+        {bg:'#fef2f2',ic:'🎁',v:d.pr, c:'#ef4444',l:'Điểm đã đổi'},
+        {bg:'#fff7ed',ic:'📈',v:d.avg,c:'var(--primary)',l:'Giá trị TB/giao dịch'}
+      ];
+      return `<div class="rcard"><h2>💰 Báo cáo tài chính</h2>
+        <p class="text-green-600 font-semibold text-sm mb-5">Tăng trưởng: ${d.g} so với kỳ trước</p>
+        <div class="grid grid-cols-3 gap-4">${items.map(x=>`<div class="kpi-tile" style="background:${x.bg}"><div style="font-size:22px">${x.ic}</div><div class="kpi-val" style="color:${x.c};font-size:1.5rem">${x.v}</div><div class="kpi-lbl">${x.l}</div></div>`).join('')}</div>
+      </div>`;
+    }
+
+    function renderCustomer(d){
+      const agRows=d.ag.map(g=>`<tr><td>${g.l}</td><td>${g.p}%</td><td>${prog(g.p,g.c)}</td></tr>`).join('');
+      const glRows=d.gl.map(g=>`<tr><td>${g.n}</td><td>${g.p}%</td><td>${prog(g.p,'var(--primary)')}</td></tr>`).join('');
+      return `<div class="rcard"><h2>👥 Phân tích khách hàng</h2>
+        <div class="grid grid-cols-2 gap-5 mb-6">
+          <div class="rounded-xl p-5 text-center" style="background:#f0fdf4"><div class="text-4xl font-extrabold text-green-600">${d.ret}</div><div class="text-sm text-gray-600 mt-1">Tỷ lệ giữ chân KH</div></div>
+          <div class="rounded-xl p-5 text-center" style="background:#fff7ed"><div class="text-4xl font-extrabold" style="color:var(--primary)">${d.av}</div><div class="text-sm text-gray-600 mt-1">Lần ghé thăm TB/tháng</div></div>
+        </div>
+        <div class="grid grid-cols-2 gap-6">
+          <div><p class="font-bold text-sm mb-3">Phân bố độ tuổi</p><table class="rtab"><thead><tr><th>Nhóm tuổi</th><th>%</th><th></th></tr></thead><tbody>${agRows}</tbody></table></div>
+          <div><p class="font-bold text-sm mb-3">Mục tiêu tập luyện</p><table class="rtab"><thead><tr><th>Mục tiêu</th><th>%</th><th></th></tr></thead><tbody>${glRows}</tbody></table></div>
+        </div>
+      </div>`;
+    }
+
+    /* ══════════ CSV / EXPORT ══════════ */
+    function buildCSV(type, period){
+      const d=RD[type][period];
+      const rows=[['Báo cáo',TLABELS[type]],['Kỳ',PLABELS[period]],['Xuất lúc',new Date().toLocaleString('vi-VN')],[]];
+      if(type==='business'){
+        rows.push(['Chỉ số','Giá trị','Tăng trưởng']);
+        [['Học viên mới',d.nm,d.d[0]],['Doanh thu',d.rev,d.d[1]],['Tỷ lệ gia hạn',d.renew,d.d[2]],['Tỷ lệ hủy',d.cancel,d.d[3]]].forEach(r=>rows.push(r));
+      } else if(type==='services'){
+        rows.push(['Gói tập','Số lượng','Tỷ lệ']); d.pkgs.forEach(p=>rows.push([p.n,p.c,p.p]));
+        rows.push([]); rows.push(['Lớp tập','Số buổi']); d.cls.forEach(c=>rows.push([c.n,c.s]));
+      } else if(type==='staff'){
+        rows.push(['HLV','Rating','Buổi dạy','Câu hỏi','Hài lòng']); d.forEach(r=>rows.push([r.n,r.r,r.s,r.a,r.sat]));
+      } else if(type==='finance'){
+        rows.push(['Chỉ số','Giá trị']);
+        [['Tổng doanh thu',d.tot],['Gói tập',d.pkg],['Dịch vụ',d.svc],['Điểm phát',d.pi],['Điểm đổi',d.pr],['Giá trị TB/GD',d.avg],['Tăng trưởng',d.g]].forEach(r=>rows.push(r));
+      } else if(type==='customer'){
+        rows.push(['Chỉ số tổng hợp']); rows.push(['Giữ chân KH',d.ret],['Ghé thăm TB/tháng',d.av]);
+        rows.push([]); rows.push(['Nhóm tuổi','%']); d.ag.forEach(g=>rows.push([g.l,g.p]));
+        rows.push([]); rows.push(['Mục tiêu','%']); d.gl.forEach(g=>rows.push([g.n,g.p]));
+      }
+      return rows.map(r=>r.map(c=>`"${String(c??'').replace(/"/g,'""')}"`).join(',')).join('\n');
+    }
+
+    function dlFile(name,content,mime){
+      const blob=new Blob(['\uFEFF'+content],{type:mime});
+      const url=URL.createObjectURL(blob);
+      const a=document.createElement('a'); a.href=url; a.download=name; a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    /* ══════════ APP ══════════ */
+    const app = {
+      currentStep: 1,
+      selectedPackage: 'premium',
+      selectedLoginRole: 'student',
+      selectedReportType: 'business',
+      selectedReportPeriod: 'month',
+      currentQNAMessage: null,
+      currentQNAFilter: 'all',
+
+      /* ── report ── */
+      selectReportType(type){
+        this.selectedReportType=type;
+        document.querySelectorAll('.report-type-card').forEach(c=>c.classList.remove('selected'));
+        event.currentTarget.classList.add('selected');
+        this.renderPreview();
+      },
+      selectPeriod(p){
+        this.selectedReportPeriod=p;
+        ['month','quarter','year'].forEach(x=>document.getElementById(`pill-${x}`)?.classList.toggle('active',x===p));
+        this.renderPreview();
+      },
+      renderPreview(){
+        const el=document.getElementById('report-preview'); if(!el) return;
+        const t=this.selectedReportType, p=this.selectedReportPeriod, d=RD[t][p];
+        const badge=`<div class="flex items-center gap-3 mb-4 no-print"><span class="badge badge-orange">${PLABELS[p]}</span><span class="text-sm text-gray-500">${TLABELS[t]}</span></div>`;
+        let html=badge;
+        if(t==='business') html+=renderBusiness(d);
+        else if(t==='services') html+=renderServices(d);
+        else if(t==='staff') html+=renderStaff(d);
+        else if(t==='finance') html+=renderFinance(d);
+        else if(t==='customer') html+=renderCustomer(d);
+        el.innerHTML=html;
+      },
+      toggleExpMenu(){
+        const m=document.getElementById('expMenu'); m.classList.toggle('open');
+        if(m.classList.contains('open')){
+          setTimeout(()=>{ document.addEventListener('click',function h(e){ if(!document.getElementById('expWrap').contains(e.target)){m.classList.remove('open');document.removeEventListener('click',h);} }); },10);
+        }
+      },
+      exportReport(fmt){
+        document.getElementById('expMenu').classList.remove('open');
+        const t=this.selectedReportType, p=this.selectedReportPeriod;
+        const slug=`TFitness_${TLABELS[t].replace(/[&\s]/g,'_')}_${PLABELS[p].replace(/\s/g,'_')}`;
+        if(fmt==='pdf'){
+          const prevHtml=document.getElementById('report-preview').innerHTML;
+          const win=window.open('','_blank');
+          win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${slug}</title>
+            <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+            <style>*{font-family:'Be Vietnam Pro',sans-serif;box-sizing:border-box}body{padding:32px;color:#111}h1{font-size:22px;font-weight:800;margin-bottom:4px}.meta{color:#6b7280;font-size:13px;margin-bottom:24px}.rcard{background:#fff;border-radius:14px;padding:24px;margin-bottom:20px;border:1px solid #e5e7eb}.rcard h2{font-size:18px;font-weight:800;margin-bottom:16px}.grid{display:grid;gap:16px}.grid-cols-4{grid-template-columns:repeat(4,1fr)}.grid-cols-3{grid-template-columns:repeat(3,1fr)}.grid-cols-2{grid-template-columns:repeat(2,1fr)}.kpi-tile{text-align:center;padding:18px 14px;border-radius:12px}.kpi-val{font-size:1.8rem;font-weight:800;line-height:1.1}.kpi-lbl{font-size:11px;color:#6b7280;margin-top:4px}.kpi-d{font-size:11px;font-weight:600;margin-top:3px}.d-up{color:#10b981}.d-dn{color:#ef4444}.rtab{width:100%;border-collapse:collapse;font-size:13px}.rtab th{background:#f9fafb;padding:9px 13px;text-align:left;font-weight:700;border-bottom:1px solid #e5e7eb}.rtab td{padding:9px 13px;border-bottom:1px solid #f3f4f6;vertical-align:middle}.badge{display:inline-block;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600;background:#d1fae5;color:#059669}.prog-track{height:8px;border-radius:4px;background:#e5e7eb;overflow:hidden;max-width:160px}.prog-fill{height:100%;border-radius:4px}.bar-wrap{display:flex;align-items:flex-end;gap:6px;height:72px}.bar-col{display:flex;flex-direction:column;align-items:center;flex:1}.bar-rect{width:100%;border-radius:4px 4px 0 0}.bar-lbl{font-size:9px;text-align:center;color:#9ca3af;margin-top:3px}.no-print{display:none}</style></head><body>
+            <h1>${TLABELS[t]}</h1><p class="meta">Kỳ: ${PLABELS[p]} &nbsp;·&nbsp; Xuất lúc: ${new Date().toLocaleString('vi-VN')}</p>
+            ${prevHtml}<scr`+`ipt>window.onload=()=>window.print();</scr`+`ipt></body></html>`);
+          win.document.close();
+          this.showToast('📄 Đang mở cửa sổ in PDF...');
+        } else if(fmt==='csv'){
+          dlFile(`${slug}.csv`,buildCSV(t,p),'text/csv;charset=utf-8');
+          this.showToast('📋 Đã tải xuống file CSV!');
+        } else if(fmt==='excel'){
+          dlFile(`${slug}.xls`,buildCSV(t,p),'application/vnd.ms-excel;charset=utf-8');
+          this.showToast('📊 Đã tải xuống file Excel!');
+        }
+      },
+
+      /* ── auth / routing ── */
+      selectLoginRole(role){
+        this.selectedLoginRole=role;
+        const rn={student:'Học viên',staff:'Nhân viên',admin:'Quản trị viên'};
+        ['student','staff','admin'].forEach(r=>document.getElementById(`role-${r}`).classList.remove('selected'));
+        document.getElementById(`role-${role}`).classList.add('selected');
+        document.getElementById('login-btn').textContent=`Đăng nhập với vai trò ${rn[role]}`;
+      },
+      handleLogin(){
+        const e=document.getElementById('login-email').value.trim(), p=document.getElementById('login-password').value;
+        const er=document.getElementById('login-error');
+        if(!e||!p){er.textContent='Vui lòng điền đầy đủ thông tin';er.classList.remove('hidden');return;}
+        this.hideLoginModal(); this.showToast('✅ Đăng nhập thành công!');
+        setTimeout(()=>this.showDashboard(this.selectedLoginRole),500);
+      },
+      showDashboard(role){
+        ['homepage','registration','student-dashboard','staff-dashboard','admin-dashboard'].forEach(id=>document.getElementById(id).classList.add('hidden'));
+        if(role==='student'){
+          document.getElementById('student-dashboard').classList.remove('hidden');
+          this.switchStudentTab('dashboard');
+        } else if(role==='staff'){
+          document.getElementById('staff-dashboard').classList.remove('hidden');
+          document.getElementById('staff-home-tab').classList.remove('hidden');
+          document.getElementById('staff-qna-tab').classList.add('hidden');
+          document.querySelectorAll('#staff-dashboard .menu-item').forEach(item=>item.classList.remove('active'));
+          document.querySelectorAll('#staff-dashboard .menu-item')[0].classList.add('active');
+          this.loadStaffQNA(); this.updateStaffStats();
+        } else if(role==='admin'){
+          document.getElementById('admin-dashboard').classList.remove('hidden');
+          this.switchAdminTab('dashboard');
+        }
+        lucide.createIcons();
+      },
+      switchStudentTab(tab){
+        document.getElementById('student-dashboard-tab').classList.add('hidden');
+        document.getElementById('student-qna-tab').classList.add('hidden');
+        document.getElementById(`student-${tab}-tab`).classList.remove('hidden');
+        document.querySelectorAll('#student-dashboard .menu-item').forEach(item=>item.classList.remove('active'));
+        if(event&&event.target){ const m=event.target.closest('.menu-item'); if(m) m.classList.add('active'); }
+        if(tab==='qna') this.loadStudentQNA();
+        lucide.createIcons();
+      },
+      switchStaffTab(eventOrStr,tabName){
+        const tab=typeof eventOrStr==='string'?eventOrStr:tabName;
+        const clicked=typeof eventOrStr==='object'?eventOrStr.target?.closest('.menu-item'):null;
+        document.getElementById('staff-home-tab').classList.add('hidden');
+        document.getElementById('staff-qna-tab').classList.add('hidden');
+        document.getElementById(`staff-${tab}-tab`).classList.remove('hidden');
+        document.querySelectorAll('#staff-dashboard .menu-item').forEach(item=>item.classList.remove('active'));
+        if(clicked) clicked.classList.add('active');
+        else { const idx=tab==='home'?0:1; document.querySelectorAll('#staff-dashboard .menu-item')[idx]?.classList.add('active'); }
+        if(tab==='qna'){this.currentQNAFilter='all';this.loadStaffQNAFull();}
+        lucide.createIcons();
+      },
+      switchStaffTabById(tab){
+        document.getElementById('staff-home-tab').classList.add('hidden');
+        document.getElementById('staff-qna-tab').classList.add('hidden');
+        document.getElementById(`staff-${tab}-tab`).classList.remove('hidden');
+        const idx=tab==='home'?0:1;
+        document.querySelectorAll('#staff-dashboard .menu-item').forEach((el,i)=>el.classList.toggle('active',i===idx));
+        if(tab==='qna'){this.currentQNAFilter='all';this.loadStaffQNAFull();}
+        lucide.createIcons();
+      },
+      switchAdminTab(tab){
+        document.getElementById('admin-dashboard-tab').classList.add('hidden');
+        document.getElementById('admin-reports-tab').classList.add('hidden');
+        document.getElementById(`admin-${tab}-tab`).classList.remove('hidden');
+        document.querySelectorAll('#admin-dashboard .menu-item').forEach(item=>item.classList.remove('active'));
+        if(event&&event.target){ const m=event.target.closest('.menu-item'); if(m) m.classList.add('active'); }
+        if(tab==='reports') this.renderPreview();
+        lucide.createIcons();
+      },
+
+      /* ── staff qna ── */
+      updateStaffStats(){
+        const qs=allMessages.filter(m=>m.type==='question');
+        const p=qs.filter(m=>m.status==='pending').length, a=qs.filter(m=>m.status==='answered').length;
+        ['staff-stat-pending','qna-page-stat-pending'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=p;});
+        ['staff-stat-answered','qna-page-stat-answered'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=a;});
+        ['staff-stat-total','qna-page-stat-total'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=qs.length;});
+        const badge=document.getElementById('staff-qna-badge');
+        if(badge){badge.textContent=p;badge.classList.toggle('hidden',p===0);}
+      },
+      loadStaffQNA(){
+        const c=document.querySelector('.staff-qna-list'); if(!c) return;
+        const pnd=allMessages.filter(m=>m.type==='question'&&m.status==='pending');
+        c.innerHTML=pnd.length===0?'<p class="text-center text-gray-500 py-8">Không có câu hỏi nào chờ trả lời 🎉</p>'
+          :pnd.slice(0,5).map(m=>`<div class="staff-qna-item" onclick="app.showResponseModalById('${m.__backendId}')"><div class="flex justify-between items-start"><div class="flex-1"><p class="font-bold text-sm">${m.message.split('\n')[0]}</p><p class="text-sm text-gray-600 mt-1">${(m.message.split('\n\n')[1]||'').substring(0,80)}${(m.message.split('\n\n')[1]||'').length>80?'...':''}</p><p class="text-xs text-gray-400 mt-2">${m.email}</p></div><span class="badge badge-orange ml-3 flex-shrink-0">Chờ trả lời</span></div></div>`).join('')
+          +(pnd.length>5?`<p class="text-center text-sm mt-3"><a href="#" class="link-primary" onclick="app.switchStaffTabById('qna');return false;">Xem thêm ${pnd.length-5} câu hỏi →</a></p>`:'');
+        this.updateStaffStats();
+      },
+      loadStaffQNAFull(){ this.updateStaffStats(); this.renderFilteredQNA(); },
+      filterStaffQNA(f){
+        this.currentQNAFilter=f;
+        ['all','pending','answered'].forEach(x=>document.getElementById(`filter-${x}`)?.classList.toggle('active',x===f));
+        this.renderFilteredQNA();
+      },
+      renderFilteredQNA(){
+        const c=document.getElementById('staff-qna-full-list'); if(!c) return;
+        const s=(document.getElementById('qna-search')?.value||'').toLowerCase();
+        let msgs=allMessages.filter(m=>m.type==='question');
+        if(this.currentQNAFilter==='pending') msgs=msgs.filter(m=>m.status==='pending');
+        else if(this.currentQNAFilter==='answered') msgs=msgs.filter(m=>m.status==='answered');
+        if(s) msgs=msgs.filter(m=>m.message.toLowerCase().includes(s)||m.email.toLowerCase().includes(s));
+        if(!msgs.length){c.innerHTML=`<div class="text-center py-16"><div class="text-5xl mb-4">💬</div><p class="text-gray-500">Không có câu hỏi nào</p></div>`;return;}
+        c.innerHTML=msgs.map(m=>{
+          const title=m.message.split('\n')[0], detail=m.message.split('\n\n')[1]||'', ip=m.status==='pending', ts=m.createdAt?new Date(m.createdAt).toLocaleString('vi-VN'):'';
+          return `<div class="qna-full-item ${ip?'pending':'answered'}"><div class="flex items-start justify-between gap-4"><div class="flex-1"><div class="flex items-center gap-3 mb-2 flex-wrap"><span class="badge ${ip?'badge-orange':'badge-green'}">${ip?'Chờ trả lời':'Đã trả lời'}</span><span class="text-xs text-gray-400">${m.email}</span>${ts?`<span class="text-xs text-gray-400">${ts}</span>`:''}</div><p class="font-bold text-gray-900 mb-1">${title}</p><p class="text-sm text-gray-600">${detail}</p>${m.response?`<div class="mt-4 pt-4 border-t border-gray-100"><p class="text-xs font-bold mb-1" style="color:var(--primary)">✅ Câu trả lời của bạn:</p><p class="text-sm text-gray-700">${m.response}</p></div>`:''}</div>${ip?`<button class="btn-primary flex-shrink-0" style="white-space:nowrap" onclick="app.showResponseModalById('${m.__backendId}')">Trả lời</button>`:`<button class="btn-ghost flex-shrink-0" style="white-space:nowrap;font-size:13px" onclick="app.showResponseModalById('${m.__backendId}')">Sửa trả lời</button>`}</div></div>`;
+        }).join('');
+      },
+      showResponseModalById(id){
+        const m=allMessages.find(x=>x.__backendId===id); if(!m) return;
+        this.currentQNAMessage=m;
+        const title=m.message.split('\n')[0], detail=m.message.split('\n\n')[1]||'';
+        document.getElementById('response-from').textContent=m.email;
+        document.getElementById('response-title').textContent=title;
+        document.getElementById('response-message').textContent=detail;
+        document.getElementById('response-text').value=m.response||'';
+        document.getElementById('response-error').classList.add('hidden');
+        document.getElementById('response-modal-overlay').classList.remove('hidden');
+        lucide.createIcons();
+      },
+      hideResponseModal(){ document.getElementById('response-modal-overlay').classList.add('hidden'); },
+      async submitResponse(){
+        const txt=document.getElementById('response-text').value.trim();
+        const err=document.getElementById('response-error'), btn=document.getElementById('response-submit-btn');
+        if(!txt){err.textContent='Vui lòng nhập nội dung trả lời';err.classList.remove('hidden');return;}
+        btn.disabled=true; btn.textContent='Đang gửi...';
+        const res=await window.dataSdk.update({...this.currentQNAMessage,status:'answered',response:txt,respondedAt:new Date().toISOString()});
+        btn.disabled=false; btn.textContent='Gửi trả lời';
+        if(res.isOk){this.hideResponseModal();this.showToast('✅ Trả lời thành công!');this.loadStaffQNA();this.loadStaffQNAFull();}
+      },
+      showQNAModal(){
+        document.getElementById('qna-modal-overlay').classList.remove('hidden');
+        document.getElementById('qna-title').value=''; document.getElementById('qna-message').value='';
+        document.getElementById('qna-error').classList.add('hidden');
+      },
+      hideQNAModal(){ document.getElementById('qna-modal-overlay').classList.add('hidden'); },
+      async submitQNA(){
+        const t=document.getElementById('qna-title').value.trim(), m=document.getElementById('qna-message').value.trim();
+        const err=document.getElementById('qna-error'), btn=document.getElementById('qna-submit-btn');
+        if(!t||!m){err.textContent='Vui lòng điền đầy đủ thông tin';err.classList.remove('hidden');return;}
+        btn.disabled=true; btn.textContent='Đang gửi...';
+        const res=await window.dataSdk.create({type:'question',email:'nguyenvana@tfitness.com',message:`${t}\n\n${m}`,status:'pending',createdAt:new Date().toISOString()});
+        btn.disabled=false; btn.textContent='Gửi câu hỏi';
+        if(res.isOk){this.hideQNAModal();this.showToast('✅ Gửi câu hỏi thành công! Hãy chờ trả lời');this.loadStudentQNA();}
+      },
+      loadStudentQNA(){
+        const c=document.getElementById('student-qna-list'); if(!c) return;
+        const msgs=allMessages.filter(m=>m.type==='question'&&m.email==='nguyenvana@tfitness.com');
+        c.innerHTML=msgs.length===0?'<p class="text-center text-gray-500">Bạn chưa có câu hỏi nào. <a href="#" class="link-primary" onclick="app.showQNAModal();return false;">Gửi câu hỏi ngay</a></p>'
+          :msgs.map(m=>`<div class="qna-card ${m.status==='pending'?'pending':'answered'}"><div class="flex justify-between items-start mb-3"><div class="flex-1"><p class="font-bold">${m.message.split('\n')[0]}</p><p class="text-sm text-gray-600 mt-1">${m.message.split('\n\n')[1]||''}</p></div><span class="badge ${m.status==='pending'?'badge-orange':'badge-green'}">${m.status==='pending'?'Chờ trả lời':'Đã trả lời'}</span></div>${m.response?`<div class="mt-4 pt-4 border-t"><p class="text-sm font-bold" style="color:var(--primary)">Trả lời:</p><p class="text-sm text-gray-700 mt-2">${m.response}</p></div>`:''}</div>`).join('');
+      },
+      refreshQNAData(){
+        const st=document.getElementById('student-qna-tab'); if(st&&!st.classList.contains('hidden')) this.loadStudentQNA();
+        const sd=document.getElementById('staff-dashboard'); if(sd&&!sd.classList.contains('hidden')){this.loadStaffQNA();const qt=document.getElementById('staff-qna-tab');if(qt&&!qt.classList.contains('hidden'))this.loadStaffQNAFull();}
+      },
+      showHomepage(){
+        ['homepage','registration','student-dashboard','staff-dashboard','admin-dashboard'].forEach(id=>document.getElementById(id).classList.add('hidden'));
+        document.getElementById('homepage').classList.remove('hidden'); lucide.createIcons();
+      },
+      showRegistrationStep(step){
+        document.getElementById('registration').classList.remove('hidden');
+        document.getElementById('homepage').classList.add('hidden');
+        document.getElementById('student-dashboard').classList.add('hidden');
+        this.hideLoginModal(); this.currentStep=step;
+        [1,2,3].forEach(s=>document.getElementById(`reg-step-${s}`).classList.add('hidden'));
+        document.getElementById(`reg-step-${step}`).classList.remove('hidden');
+        const c1=document.getElementById('step1-circle'),c2=document.getElementById('step2-circle'),c3=document.getElementById('step3-circle');
+        c1.className=step>=1?'step-circle step-active':'step-circle step-inactive'; c1.innerHTML=step>1?'✓':'1'; if(step>1) c1.className='step-circle step-done';
+        c2.className=step>=2?'step-circle step-active':'step-circle step-inactive'; c2.innerHTML=step>2?'✓':'2'; if(step>2) c2.className='step-circle step-done';
+        c3.className=step>=3?'step-circle step-active':'step-circle step-inactive'; c3.innerHTML='3';
+        lucide.createIcons();
+      },
+      showLoginModal(){
+        document.getElementById('login-overlay').classList.remove('hidden');
+        document.getElementById('login-error').classList.add('hidden');
+        document.getElementById('login-email').value='demo@tfitness.com';
+        document.getElementById('login-password').value='password123';
+        this.selectLoginRole('student'); lucide.createIcons();
+      },
+      hideLoginModal(){ document.getElementById('login-overlay').classList.add('hidden'); },
+      selectPackage(pkg){
+        this.selectedPackage=pkg;
+        const b=document.querySelector('[value="basic"]').closest('.radio-field'), p=document.querySelector('[value="premium"]').closest('.radio-field');
+        if(pkg==='basic'){b.classList.add('selected');p.classList.remove('selected');}
+        else{p.classList.add('selected');b.classList.remove('selected');}
+      },
+      togglePassword(id){ const i=document.getElementById(id); i.type=i.type==='password'?'text':'password'; },
+      showToast(msg){ const t=document.createElement('div'); t.className='toast'; t.textContent=msg; document.body.appendChild(t); setTimeout(()=>t.remove(),3000); },
+      /* ── forgot password ── */
+      fpOTP: null,
+      fpCountdownTimer: null,
+
+      showForgotPassword(){
+        app.hideLoginModal();
+        document.getElementById('forgot-overlay').classList.remove('hidden');
+        this.fpGoToStep(1);
+        lucide.createIcons();
+      },
+      hideForgotPassword(){
+        document.getElementById('forgot-overlay').classList.add('hidden');
+        if(this.fpCountdownTimer) clearInterval(this.fpCountdownTimer);
+      },
+      fpGoToStep(step){
+        [1,2,3,4].forEach(s=>document.getElementById(`fp-step-${s}`)?.classList.add('hidden'));
+        document.getElementById(`fp-step-${step}`)?.classList.remove('hidden');
+        // Update progress bar
+        const bars=['fp-bar-1','fp-bar-2','fp-bar-3'];
+        bars.forEach((id,i)=>{
+          const el=document.getElementById(id);
+          if(el) el.style.background = i<Math.min(step,3) ? 'var(--primary)' : '#e5e7eb';
+        });
+        // Update label
+        const labels={1:'Bước 1/3 — Xác nhận email',2:'Bước 2/3 — Nhập mã xác thực',3:'Bước 3/3 — Đặt mật khẩu mới',4:'Hoàn tất'};
+        const lbl=document.getElementById('fp-step-label');
+        if(lbl) lbl.textContent=labels[step]||'';
+        lucide.createIcons();
+      },
+      fpSendOTP(){
+        const email=document.getElementById('fp-email').value.trim();
+        const errEl=document.getElementById('fp-email-error');
+        errEl.classList.add('hidden');
+        if(!email){ errEl.textContent='Vui lòng nhập địa chỉ email.'; errEl.classList.remove('hidden'); return; }
+        if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ errEl.textContent='Địa chỉ email không hợp lệ.'; errEl.classList.remove('hidden'); return; }
+        // Simulate: generate 6-digit OTP
+        this.fpOTP = String(Math.floor(100000+Math.random()*900000));
+        console.log('[Demo] OTP:', this.fpOTP); // visible in console for testing
+        document.getElementById('fp-email-display').textContent=email;
+        // Clear OTP inputs
+        document.querySelectorAll('.otp-box').forEach(el=>el.value='');
+        document.getElementById('fp-otp-error').classList.add('hidden');
+        this.fpGoToStep(2);
+        this.fpStartCountdown();
+        this.showToast('📧 Mã xác thực đã được gửi đến '+email);
+      },
+      fpResendOTP(){
+        this.fpOTP=String(Math.floor(100000+Math.random()*900000));
+        console.log('[Demo] OTP mới:', this.fpOTP);
+        document.querySelectorAll('.otp-box').forEach(el=>el.value='');
+        document.getElementById('fp-otp-error').classList.add('hidden');
+        this.fpStartCountdown();
+        const email=document.getElementById('fp-email').value.trim();
+        this.showToast('📧 Đã gửi lại mã xác thực đến '+email);
+      },
+      fpStartCountdown(){
+        if(this.fpCountdownTimer) clearInterval(this.fpCountdownTimer);
+        const resendBtn=document.getElementById('fp-resend-btn');
+        const countdown=document.getElementById('fp-countdown');
+        const timerEl=document.getElementById('fp-timer');
+        resendBtn.style.display='none'; countdown.classList.remove('hidden');
+        let secs=60; timerEl.textContent=secs;
+        this.fpCountdownTimer=setInterval(()=>{
+          secs--;
+          timerEl.textContent=secs;
+          if(secs<=0){
+            clearInterval(this.fpCountdownTimer);
+            countdown.classList.add('hidden');
+            resendBtn.style.display='';
+          }
+        },1000);
+      },
+      fpVerifyOTP(){
+        const entered=Array.from(document.querySelectorAll('.otp-box')).map(el=>el.value).join('');
+        const errEl=document.getElementById('fp-otp-error');
+        if(entered.length<6){ errEl.textContent='Vui lòng nhập đủ 6 chữ số.'; errEl.classList.remove('hidden'); return; }
+        errEl.classList.add('hidden');
+        if(this.fpCountdownTimer) clearInterval(this.fpCountdownTimer);
+        // Reset password fields
+        document.getElementById('fp-new-password').value='';
+        document.getElementById('fp-confirm-password').value='';
+        document.getElementById('fp-pw-error').classList.add('hidden');
+        ['fp-s1','fp-s2','fp-s3','fp-s4'].forEach(id=>{ const el=document.getElementById(id); if(el) el.style.background='#e5e7eb'; });
+        document.getElementById('fp-strength-label').textContent='';
+        this.fpGoToStep(3);
+      },
+      fpCheckStrength(){
+        const pw=document.getElementById('fp-new-password').value;
+        const bars=['fp-s1','fp-s2','fp-s3','fp-s4'];
+        let score=0;
+        if(pw.length>=8) score++;
+        if(/[A-Z]/.test(pw)) score++;
+        if(/[0-9]/.test(pw)) score++;
+        if(/[^A-Za-z0-9]/.test(pw)) score++;
+        const colors=['','#ef4444','#f59e0b','#3b82f6','#10b981'];
+        const labels=['','Yếu','Trung bình','Mạnh','Rất mạnh'];
+        bars.forEach((id,i)=>{
+          const el=document.getElementById(id);
+          if(el) el.style.background = i<score ? colors[score] : '#e5e7eb';
+        });
+        const lbl=document.getElementById('fp-strength-label');
+        if(lbl){ lbl.textContent=pw.length>0?labels[score]||'':''; lbl.style.color=colors[score]||'#9ca3af'; }
+      },
+      fpSavePassword(){
+        const pw=document.getElementById('fp-new-password').value;
+        const cf=document.getElementById('fp-confirm-password').value;
+        const errEl=document.getElementById('fp-pw-error');
+        errEl.classList.add('hidden');
+        if(pw.length<8){ errEl.textContent='Mật khẩu phải có ít nhất 8 ký tự.'; errEl.classList.remove('hidden'); return; }
+        if(pw!==cf){ errEl.textContent='Mật khẩu xác nhận không khớp.'; errEl.classList.remove('hidden'); return; }
+        // Simulate saving to DB
+        this.fpGoToStep(4);
+      },
+      otpInput(el,idx){
+        el.value=el.value.replace(/\D/g,'');
+        if(el.value && idx<5){
+          const boxes=document.querySelectorAll('.otp-box');
+          boxes[idx+1].focus();
+        }
+      },
+      otpKeydown(e,idx){
+        if(e.key==='Backspace'){
+          const boxes=document.querySelectorAll('.otp-box');
+          if(!boxes[idx].value && idx>0) boxes[idx-1].focus();
+        } else if(e.key==='ArrowLeft' && idx>0){
+          document.querySelectorAll('.otp-box')[idx-1].focus();
+        } else if(e.key==='ArrowRight' && idx<5){
+          document.querySelectorAll('.otp-box')[idx+1].focus();
+        }
+      },
+
+      logout(){
+        this.showToast('👋 Đã đăng xuất thành công!');
+        setTimeout(()=>this.showHomepage(), 800);
+      }
+    };
+
+    app.showHomepage();
+   </script>
+  </div>
+ </body>
+</html>
