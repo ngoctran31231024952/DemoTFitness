@@ -461,16 +461,77 @@
 
    <!-- ══════════ LOGIN MODAL ══════════ -->
    <div id="login-overlay" class="hidden modal-overlay" onclick="event.target===this&&app.hideLoginModal()">
-    <div class="modal">
-     <div class="flex justify-between items-center p-6 border-b"><h2 class="text-xl font-bold">Đăng nhập hệ thống</h2><button onclick="app.hideLoginModal()"><i data-lucide="x" class="w-5 h-5 text-gray-400"></i></button></div>
-     <div class="p-6 space-y-6">
-      <div><p class="text-sm text-gray-600 mb-4">Chọn vai trò đăng nhập:</p><div class="space-y-3"><div class="radio-field selected" id="role-student" onclick="app.selectLoginRole('student')"><input type="radio" name="login-role" value="student" checked><div class="flex-1"><div class="flex items-center gap-3"><span class="text-2xl">🏋️</span><div><p class="font-bold">Học viên</p><p class="text-xs text-gray-500">Thành viên tập luyện</p></div></div></div></div><div class="radio-field" id="role-staff" onclick="app.selectLoginRole('staff')"><input type="radio" name="login-role" value="staff"><div class="flex-1"><div class="flex items-center gap-3"><span class="text-2xl">👤</span><div><p class="font-bold">Nhân viên</p><p class="text-xs text-gray-500">Cán bộ huấn luyện viên</p></div></div></div></div><div class="radio-field" id="role-admin" onclick="app.selectLoginRole('admin')"><input type="radio" name="login-role" value="admin"><div class="flex-1"><div class="flex items-center gap-3"><span class="text-2xl">⚙️</span><div><p class="font-bold">Quản trị viên</p><p class="text-xs text-gray-500">Quản lý hệ thống</p></div></div></div></div></div></div>
-      <div><label class="block font-bold text-sm mb-2">Email</label><input type="email" id="login-email" class="input-field" placeholder="Nhập email" value="demo@tfitness.com"></div>
-      <div><label class="block font-bold text-sm mb-2">Mật khẩu</label><div class="relative"><input type="password" id="login-password" class="input-field pr-10" value="password123"><i data-lucide="eye" class="w-5 h-5 text-gray-400 absolute right-3 top-3.5 cursor-pointer" onclick="app.togglePassword('login-password')"></i></div></div>
-      <div class="flex justify-end"><a href="#" class="text-sm link-primary" onclick="app.showForgotPassword();return false;">Quên mật khẩu?</a></div>
+    <div class="modal" style="max-width:480px;overflow:hidden;">
+
+     <!-- Gradient header -->
+     <div class="hero-gradient px-6 pt-7 pb-6 relative">
+      <button onclick="app.hideLoginModal()" class="absolute top-4 right-4 w-8 h-8 rounded-full flex items-center justify-center transition-all" style="background:rgba(255,255,255,0.2);">
+       <i data-lucide="x" class="w-4 h-4 text-white"></i>
+      </button>
+      <div class="flex items-center gap-3 mb-4">
+       <div class="w-11 h-11 rounded-xl flex items-center justify-center" style="background:rgba(255,255,255,0.2);">
+        <i data-lucide="dumbbell" class="w-6 h-6 text-white"></i>
+       </div>
+       <div>
+        <p class="font-extrabold text-white text-xl leading-tight">TFitness</p>
+        <p class="text-white text-xs" style="opacity:0.8;">Gym xong, yêu liền</p>
+       </div>
+      </div>
+      <h2 class="text-2xl font-extrabold text-white mb-1">Chào mừng trở lại!</h2>
+      <p class="text-sm text-white" style="opacity:0.85;">Đăng nhập để tiếp tục hành trình của bạn</p>
+     </div>
+
+     <!-- Role selector -->
+     <div class="px-6 pt-5 pb-2">
+      <p class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-3">Bạn là ai?</p>
+      <div class="grid grid-cols-3 gap-2 mb-1">
+       <div id="role-student" onclick="app.selectLoginRole('student')"
+        class="role-card flex flex-col items-center gap-1.5 py-3 px-2 rounded-xl border-2 border-transparent cursor-pointer transition-all text-center"
+        style="background:#fff5f3;border-color:var(--primary);">
+        <span class="text-2xl">🏋️</span>
+        <p class="font-bold text-sm" style="color:var(--primary)">Học viên</p>
+        <input type="radio" name="login-role" value="student" checked class="hidden">
+       </div>
+       <div id="role-staff" onclick="app.selectLoginRole('staff')"
+        class="role-card flex flex-col items-center gap-1.5 py-3 px-2 rounded-xl border-2 border-gray-100 cursor-pointer transition-all text-center"
+        style="background:#f9fafb;">
+        <span class="text-2xl">👤</span>
+        <p class="font-bold text-sm text-gray-600">Nhân viên</p>
+        <input type="radio" name="login-role" value="staff" class="hidden">
+       </div>
+       <div id="role-admin" onclick="app.selectLoginRole('admin')"
+        class="role-card flex flex-col items-center gap-1.5 py-3 px-2 rounded-xl border-2 border-gray-100 cursor-pointer transition-all text-center"
+        style="background:#f9fafb;">
+        <span class="text-2xl">⚙️</span>
+        <p class="font-bold text-sm text-gray-600">Quản trị viên</p>
+        <input type="radio" name="login-role" value="admin" class="hidden">
+       </div>
+      </div>
+     </div>
+
+     <!-- Form -->
+     <div class="px-6 pb-6 space-y-4">
+      <div>
+       <label class="block font-bold text-sm mb-1.5 text-gray-700">Email</label>
+       <div class="relative">
+        <i data-lucide="mail" class="w-4 h-4 text-gray-400 absolute left-3.5 top-3.5"></i>
+        <input type="email" id="login-email" class="input-field pl-10" placeholder="Nhập email của bạn" value="demo@tfitness.com">
+       </div>
+      </div>
+      <div>
+       <label class="block font-bold text-sm mb-1.5 text-gray-700">Mật khẩu</label>
+       <div class="relative">
+        <i data-lucide="lock" class="w-4 h-4 text-gray-400 absolute left-3.5 top-3.5"></i>
+        <input type="password" id="login-password" class="input-field pl-10 pr-10" value="password123">
+        <i data-lucide="eye" class="w-4 h-4 text-gray-400 absolute right-3.5 top-3.5 cursor-pointer" onclick="app.togglePassword('login-password')"></i>
+       </div>
+      </div>
+      <div class="flex justify-end -mt-1">
+       <a href="#" class="text-sm font-semibold link-primary" onclick="app.showForgotPassword();return false;">Quên mật khẩu?</a>
+      </div>
       <p id="login-error" class="text-sm text-red-600 hidden"></p>
-      <button class="btn-primary w-full mt-2" id="login-btn" onclick="app.handleLogin()">Đăng nhập với vai trò Học viên</button>
-      <p class="text-sm text-center text-gray-500 mt-4">Chưa có tài khoản? <a href="#" class="link-primary" onclick="app.hideLoginModal();app.showRegistrationStep(1);return false;">Đăng ký ngay</a></p>
+      <button class="btn-primary w-full" style="padding:12px 20px;font-size:15px;" id="login-btn" onclick="app.handleLogin()">Đăng nhập với vai trò Học viên</button>
+      <p class="text-sm text-center text-gray-500">Chưa có tài khoản? <a href="#" class="link-primary font-semibold" onclick="app.hideLoginModal();app.showRegistrationStep(1);return false;">Đăng ký ngay</a></p>
      </div>
     </div>
    </div>
@@ -796,8 +857,23 @@
       selectLoginRole(role){
         this.selectedLoginRole=role;
         const rn={student:'Học viên',staff:'Nhân viên',admin:'Quản trị viên'};
-        ['student','staff','admin'].forEach(r=>document.getElementById(`role-${r}`).classList.remove('selected'));
-        document.getElementById(`role-${role}`).classList.add('selected');
+        // Reset all cards
+        ['student','staff','admin'].forEach(r=>{
+          const card=document.getElementById(`role-${r}`);
+          if(!card) return;
+          card.style.borderColor='#f3f4f6';
+          card.style.background='#f9fafb';
+          const label=card.querySelector('p');
+          if(label){ label.style.color='#4b5563'; }
+        });
+        // Highlight selected card
+        const sel=document.getElementById(`role-${role}`);
+        if(sel){
+          sel.style.borderColor='var(--primary)';
+          sel.style.background='#fff5f3';
+          const label=sel.querySelector('p');
+          if(label){ label.style.color='var(--primary)'; }
+        }
         document.getElementById('login-btn').textContent=`Đăng nhập với vai trò ${rn[role]}`;
       },
       handleLogin(){
